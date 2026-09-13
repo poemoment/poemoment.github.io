@@ -1,3 +1,5 @@
+import { searchLocal } from '@/lib/search-client'
+
 import { SOCIAL_LINKS } from './fs/content'
 import { displayPath, getNode, parentOf, prettyPath, resolvePath } from './fs/path'
 import type { DirNode, FsNode } from './fs/types'
@@ -306,21 +308,20 @@ export const commands: CommandRegistry = {
       push([{ kind: 'text', tone: 'muted', text: `searching "${query}" …` }])
 
       try {
-        const response = await fetch(`/api/search.json?q=${encodeURIComponent(query)}&limit=6`)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const payload = (await response.json()) as { results: SearchApiResult[] }
+        // 纯静态站:本地索引 + 浏览器端打分,与站内搜索同一实现
+        const results = (await searchLocal(query, 6)) as unknown as SearchApiResult[]
 
-        if (payload.results.length === 0) {
+        if (results.length === 0) {
           push([{ kind: 'text', tone: 'muted', text: 'no results' }])
           return
         }
 
         const lines: OutputLine[] = [
-          { kind: 'text', tone: 'muted', text: `${payload.results.length} results` },
+          { kind: 'text', tone: 'muted', text: `${results.length} results` },
           { kind: 'spacer' }
         ]
 
-        payload.results.forEach((result, index) => {
+        results.forEach((result, index) => {
           lines.push(
             {
               kind: 'node',

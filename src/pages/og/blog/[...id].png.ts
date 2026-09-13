@@ -3,7 +3,7 @@ import type { CollectionEntry } from 'astro:content'
 import { getBlogCollection } from 'astro-pure/server'
 import { postOgPng } from '@/lib/og'
 
-export const prerender = false
+export const prerender = true
 
 export async function getStaticPaths() {
   const posts = await getBlogCollection()

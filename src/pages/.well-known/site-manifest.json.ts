@@ -3,9 +3,12 @@ import type { APIRoute } from 'astro'
 import { ROOT_LABEL } from '@/components/terminal/fs/content'
 import { buildSiteFs } from '@/components/terminal/fs/server'
 
-const SITE_URL = 'https://example.com'
+/** 纯静态站:构建时生成 */
+export const prerender = true
 
-const INSTRUCTIONS = `You are reading a structured map of this personal blog template.
+const SITE_URL = 'https://poemoment.github.io'
+
+const INSTRUCTIONS = `You are reading a structured map of this personal blog.
 
 Quick start:
   - Read the "description" field for context.
@@ -23,7 +26,7 @@ export const GET: APIRoute = async () => {
     name: ROOT_LABEL,
     site: SITE_URL,
     description:
-      'A reusable Astro personal blog template with a terminal-first homepage, markdown content, search, notes, projects, links, and an agent-readable site map.',
+      'poemoment 的个人博客:长期理解 AI 系统的学习记录、工程复盘与公开思考。提供文章、随记、收藏、项目、搜索、RSS 与面向 AI 的站点清单。',
     instructions: INSTRUCTIONS,
     tree,
     endpoints: {
@@ -35,6 +38,13 @@ export const GET: APIRoute = async () => {
         note:
           'Use the endpoint field from a post node directly. Astro collection ids and filesystem-safe names can differ.'
       },
+      search_index: {
+        url: `/api/search-index.json`,
+        method: 'GET',
+        format: 'json',
+        fields: ['docs'],
+        note: 'Full static search index (title, description, tags, body).'
+      },
       well_known_manifest: {
         url: `${SITE_URL}/.well-known/site-manifest.json`,
         method: 'GET',
@@ -44,7 +54,7 @@ export const GET: APIRoute = async () => {
     },
     links: {
       site: SITE_URL,
-      github: 'https://github.com/yourname/your-blog',
+      github: 'https://github.com/poemoment',
       rss: `${SITE_URL}/rss.xml`,
       sitemap: `${SITE_URL}/sitemap-index.xml`
     },
@@ -61,12 +71,3 @@ export const GET: APIRoute = async () => {
     }
   })
 }
-
-export const OPTIONS: APIRoute = () =>
-  new Response(null, {
-    headers: {
-      'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET, OPTIONS',
-      'access-control-max-age': '86400'
-    }
-  })

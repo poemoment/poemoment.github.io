@@ -1,17 +1,23 @@
 import type { APIRoute } from 'astro'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
-import { getEntry } from 'astro:content'
+import { getCollection, getEntry } from 'astro:content'
 
 /**
  * Plaintext-ish endpoint consumed by the dev-mode `cat post` viewer.
  * Returns rendered HTML (with shiki syntax-highlighted code blocks)
  * plus a flat heading list for in-viewer navigation.
  *
- * SSR (no prerender) — entry ids contain spaces and a `/post` suffix
- * which Astro's spread-param prerender match round-trips poorly.
- *
- * Lives under `/api/` so it doesn't fight `[...id].astro` on /blog.
+ * 纯静态站:构建时为每篇文章预生成一份 JSON。
  */
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft)
+  return posts.map((post) => ({
+    params: { id: post.id }
+  }))
+}
 
 let processorPromise: Promise<Awaited<ReturnType<typeof createMarkdownProcessor>>> | null = null
 

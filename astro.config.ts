@@ -1,6 +1,5 @@
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import react from '@astrojs/react'
-import vercel from '@astrojs/vercel'
 import AstroPureIntegration from 'astro-pure'
 import { defineConfig } from 'astro/config'
 import rehypeKatex from 'rehype-katex'
@@ -26,20 +25,15 @@ import config from './src/site.config.ts'
 // https://astro.build/config
 export default defineConfig({
   // Top-Level Options
-  site: 'http://localhost:4321',
+  site: 'https://poemoment.github.io',
   // base: '/docs',
   trailingSlash: 'never',
 
-  // Adapter
-  // https://docs.astro.build/en/guides/deploy/
-  // 1. Vercel (serverless)
-  adapter: vercel(),
-  output: 'server',
-  // 2. Vercel (static)
-  // adapter: vercelStatic(),
-  // 3. Local (standalone)
-  // adapter: node({ mode: 'standalone' }),
+  // Adapter —— 纯静态站(GitHub Pages 部署)
+  // 若日后要回到 Vercel SSR:恢复 `import vercel from '@astrojs/vercel'` 并取消下面两行注释
+  // adapter: vercel(),
   // output: 'server',
+  output: 'static',
   // ---
 
   image: {

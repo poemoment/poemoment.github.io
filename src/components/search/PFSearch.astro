@@ -29,6 +29,8 @@ const isLocalDev = import.meta.env.DEV
 </template-site-search>
 
 <script>
+  import { searchLocal } from '@/lib/search-client'
+
   type LocalSearchResult = {
     collection: 'blog' | 'archive' | 'curated'
     title: string
@@ -102,17 +104,14 @@ const isLocalDev = import.meta.env.DEV
         status.textContent = 'Searching...'
 
         try {
-          const response = await fetch(
-            `/api/search.json?q=${encodeURIComponent(query)}&limit=10`,
-            { signal: activeRequest.signal }
-          )
-          if (!response.ok) throw new Error(`HTTP ${response.status}`)
-          const payload = (await response.json()) as { results: LocalSearchResult[] }
-          renderResults(payload.results)
+          // 纯静态站:拉取构建时生成的索引,在浏览器端打分(见 @/lib/search-client)
+          const matches = await searchLocal(query, 10)
+          if (activeRequest.signal.aborted) return
+          renderResults(matches)
           status.textContent =
-            payload.results.length === 0
+            matches.length === 0
               ? 'No results.'
-              : `${payload.results.length} result${payload.results.length === 1 ? '' : 's'}`
+              : `${matches.length} result${matches.length === 1 ? '' : 's'}`
         } catch (error) {
           if (error instanceof DOMException && error.name === 'AbortError') return
           status.textContent = 'Search failed.'

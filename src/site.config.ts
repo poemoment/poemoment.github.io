@@ -95,8 +95,8 @@ export const integ: IntegrationUserConfig = {
     applyTip: [
       { name: 'Name', val: theme.title },
       { name: 'Desc', val: theme.description || 'Null' },
-      { name: 'Link', val: 'http://localhost:4321/' },
-      { name: 'Avatar', val: 'http://localhost:4321/favicon/favicon.ico' }
+      { name: 'Link', val: 'https://poemoment.github.io/' },
+      { name: 'Avatar', val: 'https://poemoment.github.io/favicon/favicon.ico' }
     ]
   },
   pagefind: true,
