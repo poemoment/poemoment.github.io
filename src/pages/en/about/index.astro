@@ -1,0 +1,90 @@
+---
+import { Button, Timeline } from 'astro-pure/user'
+
+import ToolSection from '@/components/about/ToolSection.astro'
+import PageLayout from '@/layouts/CommonPage.astro'
+
+const headings = [
+  { depth: 2, slug: 'profile', text: 'Profile' },
+  { depth: 2, slug: 'tools', text: 'Tools' },
+  { depth: 2, slug: 'content-system', text: 'Content System' },
+  { depth: 2, slug: 'about-template', text: 'About Template' }
+]
+---
+
+<PageLayout title='About' {headings} info='/en/about'>
+  <p>This is a personal profile page template.</p>
+  <p>
+    Replace this paragraph with your role, interests, current focus, and the one idea you want
+    readers to remember. Keep it compact: two to four sentences is usually enough.
+  </p>
+  <Button title='View projects' class='w-fit' href='/en/projects' style='ahead' />
+
+  <h2 id='profile'>Profile</h2>
+  <ul>
+    <li><strong>Role</strong>: your role, major, job title, or learning direction.</li>
+    <li><strong>Focus</strong>: the topics you write about most often.</li>
+    <li><strong>Working on</strong>: one current project or long-term plan.</li>
+    <li><strong>Outside work</strong>: one human detail that makes the page yours.</li>
+  </ul>
+
+  <h2 id='tools'>Tools</h2>
+  <p>Keep the tools you actually use. A short, honest list beats a wall of badges.</p>
+  <ToolSection
+    class='mb-5'
+    title='Writing and Coding'
+    tools={[
+      {
+        name: 'Astro',
+        description: 'Static-first web framework',
+        href: 'https://astro.build/'
+      },
+      {
+        name: 'TypeScript',
+        description: 'Typed JavaScript',
+        href: 'https://www.typescriptlang.org/'
+      },
+      {
+        name: 'GitHub',
+        description: 'Code hosting and collaboration',
+        href: 'https://github.com/',
+        icon: import('@/assets/tools/github.svg?raw')
+      },
+      {
+        name: 'Vercel',
+        description: 'Frontend deployment',
+        href: 'https://vercel.com/',
+        icon: import('@/assets/tools/vercel.svg?raw')
+      }
+    ]}
+  />
+
+  <h2 id='content-system'>Content System</h2>
+  <p>
+    The template has three content tracks by default: Blog for essays, Notes for small entries, and
+    Curated for resources. You can start with Blog only and enable the rest when your writing rhythm
+    is ready.
+  </p>
+
+  <h2 id='about-template'>About Template</h2>
+  <p>Website history:</p>
+  <Timeline
+    events={[
+      {
+        date: '2026-06-23',
+        content:
+          'Converted the original personal site into a reusable template with placeholder content.'
+      },
+      {
+        date: '2026-06-23',
+        content:
+          'Removed personal contact details, private project links, generated build output, and old article content.'
+      },
+      {
+        date: '2026-06-23',
+        content:
+          'Added a Chinese guide for editing, publishing, and open-sourcing the site.'
+      }
+    ]}
+  />
+</PageLayout>

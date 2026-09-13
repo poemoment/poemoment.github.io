@@ -1,0 +1,107 @@
+---
+import { Button, Timeline } from 'astro-pure/user'
+
+import ToolSection from '@/components/about/ToolSection.astro'
+import PageLayout from '@/layouts/CommonPage.astro'
+
+const headings = [
+  { depth: 2, slug: 'profile', text: '关于我' },
+  { depth: 2, slug: 'method', text: '文章怎么写出来' },
+  { depth: 2, slug: 'tools', text: '常用工具' },
+  { depth: 2, slug: 'content-system', text: '内容分区' },
+  { depth: 2, slug: 'site-history', text: '站点历史' }
+]
+---
+
+<PageLayout title='关于' {headings} info='/about'>
+  {/* 视觉菜单 ㉗（学自 mattstromawn）：关于页以一句「职业论文」开场,一句话说清这个站在做什么。文案可按自己的表述微调。 */}
+  <p class='thesis-line'>我在长期理解 AI 系统如何工作,并把理解的过程公开写成文章。</p>
+  <p>你好，我是 poemoment。</p>
+  <p>
+    这里是我的个人博客，用来记录我正在理解的技术、实践中的选择与修正，以及一些还不完整但值得继续追问的想法。
+    【TODO：用 2–4 句话补充你的身份、当前方向，和你希望读者记住的一句话。】
+  </p>
+  <Button title='查看项目' class='w-fit' href='/projects' style='ahead' />
+
+  <h2 id='profile'>关于我</h2>
+  <ul>
+    <li><strong>方向</strong>：【你的专业 / 职业 / 学习方向】</li>
+    <li><strong>写作重点</strong>：技术学习、实践记录与个人思考</li>
+    <li><strong>正在做</strong>：搭建并打磨这个博客，练习公开写作</li>
+    <li><strong>工作之外</strong>：【一个让页面更像"人"的小细节，如爱好】</li>
+  </ul>
+
+  {/* 视觉菜单 ㉚（学自 samwho）：把研究方法本身写成品牌——一句话公开「文章怎么生产」,质量信号前置。 */}
+  <h2 id='method'>文章怎么写出来</h2>
+  <p>
+    研究笔记类文章的方法：先复现能跑通的最小例子，再回头写完整的理解——写不清楚的地方，
+    通常就是还没理解的地方。这篇文章的写法说明会随实践修正。
+  </p>
+
+  <h2 id='tools'>常用工具</h2>
+  <p>只保留真实在用的工具，不为了显得全面而堆图标。</p>
+  <ToolSection
+    class='mb-5'
+    title='写作与开发'
+    tools={[
+      {
+        name: 'Astro',
+        description: '本站使用的静态优先框架',
+        href: 'https://astro.build/'
+      },
+      {
+        name: 'TypeScript',
+        description: '带类型的 JavaScript',
+        href: 'https://www.typescriptlang.org/'
+      },
+      {
+        name: 'GitHub',
+        description: '代码托管与开源协作',
+        href: 'https://github.com/',
+        icon: import('@/assets/tools/github.svg?raw')
+      },
+      {
+        name: 'Vercel',
+        description: '前端部署平台',
+        href: 'https://vercel.com/',
+        icon: import('@/assets/tools/vercel.svg?raw')
+      }
+    ]}
+  />
+
+  <h2 id='content-system'>内容分区</h2>
+  <p>
+    本站有三类内容：<strong>文章</strong>（Blog）是正式的长文，<strong>随记</strong>（Archive）
+    是短笔记和阶段性想法，<strong>收藏</strong>（Curated）是值得留存的资料卡片。
+    目前以文章为主，其余分区会随着写作节奏逐步充实。
+  </p>
+
+  <h2 id='site-history'>站点历史</h2>
+  <Timeline
+    events={[
+      {
+        date: '2026-06-23',
+        content: '基于开源模板搭建站点，清理为可复用的干净起点。'
+      },
+      {
+        date: '2026-07-26',
+        content: '确定站名 poemoment，首页转向以阅读为中心的简洁风格，终端降级为次要入口。'
+      }
+    ]}
+  />
+  <p>
+    本站基于开源主题 <a href='https://github.com/cworld1/astro-theme-pure'>Astro Theme Pure</a>
+    深度改造而成。
+  </p>
+</PageLayout>
+
+<style>
+  /* ㉗：职业论文句——衬线、稍大、弱色,与正文拉开一层 */
+  .thesis-line {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 650;
+    line-height: 1.6;
+  }
+</style>

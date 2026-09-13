@@ -1,0 +1,71 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+import ProjectSection from '@/components/projects/ProjectSection.astro'
+
+const headings = [
+  { depth: 2, slug: 'featured', text: 'Featured' },
+  { depth: 2, slug: 'experiments', text: 'Experiments' },
+  { depth: 2, slug: 'credits', text: 'Credits' }
+]
+---
+
+<PageLayout title='Projects' {headings} info={{ slug: '/projects', hideComment: true }}>
+  <p>
+    这里展示你的公开项目。建议只放你愿意让别人点开看的仓库、演示站、文档或作品集条目。
+  </p>
+
+  <h2 id='featured'>Featured</h2>
+  <ProjectSection
+    project={[
+      {
+        name: 'Personal Blog',
+        description: 'The public repository for this blog and front-end template.',
+        links: [
+          { type: 'github', href: 'https://github.com/yourname/your-blog' },
+          { type: 'site', href: 'https://example.com' }
+        ]
+      },
+      {
+        name: 'Portfolio Project',
+        description: 'Replace this with a shipped app, research demo, or design prototype.',
+        links: [
+          { type: 'github', href: 'https://github.com/yourname/portfolio-project' }
+        ]
+      }
+    ]}
+  />
+
+  <h2 id='experiments'>Experiments</h2>
+  <ProjectSection
+    project={[
+      {
+        name: 'Learning Notes',
+        description: 'A public notes repo, reading list, or course project can live here.',
+        links: [
+          { type: 'github', href: 'https://github.com/yourname/learning-notes' }
+        ]
+      },
+      {
+        name: 'Small Tool',
+        description: 'A tiny utility is often easier for readers to understand than a giant app.',
+        links: [
+          { type: 'github', href: 'https://github.com/yourname/small-tool' }
+        ]
+      }
+    ]}
+  />
+
+  <h2 id='credits'>Credits</h2>
+  <ProjectSection
+    project={[
+      {
+        name: 'Astro Theme Pure',
+        description: 'The upstream theme foundation used by this template.',
+        links: [
+          { type: 'github', href: 'https://github.com/cworld1/astro-theme-pure' },
+          { type: 'site', href: 'https://astro-pure.js.org/' }
+        ]
+      }
+    ]}
+  />
+</PageLayout>

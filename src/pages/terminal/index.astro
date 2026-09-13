@@ -1,0 +1,40 @@
+---
+import Terminal from '@/components/terminal/Terminal.astro'
+import PageLayout from '@/layouts/BaseLayout.astro'
+
+export const prerender = true
+---
+
+<PageLayout meta={{ title: '站内终端' }}>
+  <main class='terminal-page'>
+    <header class='terminal-intro animate' id='content-header'>
+      <h1>站内终端</h1>
+      <p>
+        这是一个把站内内容包装成伪文件系统的探索入口，不会执行真实系统命令。 常用命令：<code>help</code
+        >、<code>ls /blog</code>、<code>cat about</code>、<code>search 关键词</code>。
+      </p>
+    </header>
+    <div class='animate' id='content'>
+      <Terminal />
+    </div>
+  </main>
+</PageLayout>
+
+<style>
+  .terminal-page {
+    padding: 2.5rem 0 5rem;
+  }
+
+  .terminal-intro h1 {
+    margin: 0 0 0.75rem;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .terminal-intro p {
+    max-width: 45rem;
+    margin: 0 0 2rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.9;
+  }
+</style>

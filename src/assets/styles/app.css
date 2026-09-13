@@ -1,0 +1,326 @@
+/* Font */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Variable.ttf');
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-VariableItalic.ttf');
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Type system: serif for display/headings, sans for body, mono for metadata */
+:root {
+  --font-serif:
+    'Source Serif 4', Georgia, 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', STSong,
+    SimSun, serif;
+  --font-sans: 'Satoshi', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Menlo, Consolas,
+    monospace;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+/* Theme */
+:root {
+  /* 研究档案室（方案 A）：米色纸底、暖墨正文、赭红强调；圆角 0–4px、无阴影 */
+  --background: 43 35% 92%;
+  --foreground: 43 8% 13%;
+  --card: 43 38% 94.5%;
+  --card-foreground: 43 8% 13%;
+  --popover: 43 38% 94.5%;
+  --popover-foreground: 43 8% 13%;
+  --primary: 10 48% 44%;
+  --primary-foreground: 43 38% 94%;
+  --secondary: 43 25% 89%;
+  --secondary-foreground: 43 8% 15%;
+  --muted: 43 25% 89%;
+  --muted-foreground: 40 5% 42%;
+  --accent: 43 25% 88%;
+  --accent-foreground: 43 8% 15%;
+  --destructive: 0 72% 45%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 43 15% 80%;
+  --input: 43 14% 81%;
+  --ring: 10 48% 44%;
+  --radius: 0.25rem;
+  --term-surface: 43 30% 92%;
+  --term-chrome: 43 25% 89%;
+  --term-ok: 152 45% 30%;
+  --code-bg: 43 22% 90%;
+  --code-fg: 43 8% 15%;
+}
+.dark {
+  /* 深空星野：蓝黑夜空底、冷白正文、星光青强调；无霓虹 */
+  --background: 225 28% 6%;
+  --foreground: 225 21% 92%;
+  --card: 225 22% 8%;
+  --card-foreground: 225 21% 92%;
+  --popover: 225 22% 8%;
+  --popover-foreground: 225 21% 92%;
+  --primary: 182 27% 63%;
+  --primary-foreground: 225 28% 6%;
+  --secondary: 225 18% 12%;
+  --secondary-foreground: 225 15% 86%;
+  --muted: 225 18% 11%;
+  --muted-foreground: 224 10% 62%;
+  --accent: 225 18% 12%;
+  --accent-foreground: 225 15% 86%;
+  --destructive: 0 62% 40%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 225 14% 20%;
+  --input: 225 12% 18%;
+  --ring: 182 27% 63%;
+  --term-surface: 225 25% 5%;
+  --term-chrome: 225 25% 4%;
+  --term-ok: 142 55% 62%;
+  --code-bg: 225 18% 10%;
+  --code-fg: 225 15% 88%;
+}
+:root {
+  --un-default-border-color: hsl(var(--border) / 1);
+}
+html.dark {
+  color-scheme: dark;
+}
+
+::selection {
+  background-color: hsl(var(--primary) / 0.16);
+}
+
+/* Global */
+a {
+  transition: color 0.2s ease;
+  &:hover {
+    color: hsl(var(--primary) / var(--un-text-opacity, 1));
+  }
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.65);
+  outline-offset: 2px;
+}
+
+/* ---- 每界面背景层(视觉菜单:每个界面一张背景图) ------------------------ */
+/* 只加载当前页面 + 当前主题的那一张:未命中规则的 background-image 不会发起请求 */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: right center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 浅色:户外摄影组(v4),低透明度压在米色底上,不与正文争注意力 */
+.page-bg[data-page='home'] {
+  background-image: url('/backgrounds/final/light/home.webp');
+  opacity: 0.5;
+}
+.page-bg[data-page='post'] {
+  background-image: url('/backgrounds/final/light/post.webp');
+  opacity: 0.5;
+}
+.page-bg[data-page='archive'] {
+  background-image: url('/backgrounds/final/light/archive.webp');
+  opacity: 0.5;
+}
+.page-bg[data-page='curated'] {
+  background-image: url('/backgrounds/final/light/curated.webp');
+  opacity: 0.6;
+}
+.page-bg[data-page='projects'] {
+  background-image: url('/backgrounds/final/light/projects.webp');
+  opacity: 0.5;
+}
+.page-bg[data-page='about'] {
+  background-image: url('/backgrounds/final/light/about.webp');
+  opacity: 0.5;
+}
+
+/* 深色:图库星空组,即当背景本身 */
+html.dark .page-bg {
+  opacity: 1;
+}
+html.dark .page-bg[data-page='home'] {
+  background-image: url('/backgrounds/final/dark/home.webp');
+}
+html.dark .page-bg[data-page='post'] {
+  background-image: url('/backgrounds/final/dark/post.webp');
+}
+html.dark .page-bg[data-page='archive'] {
+  background-image: url('/backgrounds/final/dark/archive.webp');
+}
+html.dark .page-bg[data-page='curated'] {
+  background-image: url('/backgrounds/final/dark/curated.webp');
+}
+html.dark .page-bg[data-page='projects'] {
+  background-image: url('/backgrounds/final/dark/projects.webp');
+}
+html.dark .page-bg[data-page='about'] {
+  background-image: url('/backgrounds/final/dark/about.webp');
+}
+
+/* ---- 全站实底小框透明化(标签胶囊/返回按钮/随记卡片等) ------------------ */
+/* 深浅两主题都生效;hover 不再加底色,反馈交给边框/毛玻璃与标题变色 */
+a.group.rounded-lg.bg-muted,
+a.group.rounded-lg.bg-muted:hover {
+  background-color: transparent;
+}
+
+a.group.block.rounded-xl.bg-card,
+a.group.block.rounded-xl.bg-card:hover {
+  background-color: transparent;
+  border-color: hsl(var(--border) / 0.45);
+}
+
+span.rounded-md.bg-muted {
+  background-color: transparent;
+}
+
+span.rounded-md.bg-muted {
+  background-color: transparent;
+}
+
+/* ---- Editorial typography -------------------------------------------- */
+
+/* Serif display headings across the whole site */
+h1,
+h2,
+h3,
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: var(--font-serif);
+}
+
+.prose {
+  line-height: 1.9;
+
+  & h2 {
+    padding-bottom: 0.4em;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* 学术引用块：左侧细线 + 微衬线 */
+  & blockquote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    border-inline-start: 3px solid hsl(var(--primary) / 0.75);
+  }
+
+  /* booktabs 风格表格：上下粗线、表头细线，无竖线 */
+  & table {
+    display: table;
+    width: 100%;
+    margin-block: 1.5em;
+    font-size: 0.92em;
+    border-collapse: collapse;
+
+    & th,
+    & td {
+      border: 0;
+      border-bottom: 1px solid hsl(var(--border) / 0.7);
+      background: transparent !important;
+    }
+
+    & thead th {
+      border-bottom: 1.5px solid hsl(var(--foreground) / 0.75);
+      font-weight: 600;
+    }
+
+    & tbody tr:last-child td {
+      border-bottom: 2px solid hsl(var(--foreground) / 0.75);
+    }
+  }
+
+  & :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.3rem;
+    background-color: hsl(var(--code-bg) / 0.9);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  & hr {
+    border-color: hsl(var(--border));
+  }
+}
+
+/* Mono metadata helper */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- 深色模式星野 --------------------------------------------------------
+   数量克制（约 20 颗），两层不同周期交替明暗形成闪烁；
+   z-index:-1 让星星浮在夜空底色之上、全部内容之下，不影响阅读。 */
+html.dark body::before,
+html.dark body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
+/* 第一层：偏亮、暖白与冷白交错的星 */
+html.dark body::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 8% 16%, hsl(45 55% 93% / 0.9) 42%, transparent 58%),
+    radial-gradient(2.6px 2.6px at 22% 68%, hsl(210 35% 96% / 0.75) 30%, transparent 70%),
+    radial-gradient(1.3px 1.3px at 31% 38%, hsl(0 0% 100% / 0.6) 42%, transparent 58%),
+    radial-gradient(1.5px 1.5px at 43% 8%, hsl(45 55% 93% / 0.8) 42%, transparent 58%),
+    radial-gradient(1.2px 1.2px at 55% 52%, hsl(210 35% 96% / 0.65) 42%, transparent 58%),
+    radial-gradient(2.2px 2.2px at 67% 20%, hsl(45 55% 93% / 0.85) 32%, transparent 68%),
+    radial-gradient(1.2px 1.2px at 78% 74%, hsl(0 0% 100% / 0.6) 42%, transparent 58%),
+    radial-gradient(1.5px 1.5px at 88% 34%, hsl(210 35% 96% / 0.8) 42%, transparent 58%),
+    radial-gradient(1.3px 1.3px at 94% 62%, hsl(45 55% 93% / 0.7) 42%, transparent 58%),
+    radial-gradient(1.2px 1.2px at 14% 88%, hsl(210 35% 96% / 0.7) 42%, transparent 58%);
+  animation: star-twinkle 4.5s ease-in-out infinite alternate;
+}
+
+/* 第二层：更暗、更小，错开相位让闪烁参差 */
+html.dark body::after {
+  background-image:
+    radial-gradient(1px 1px at 17% 30%, hsl(0 0% 100% / 0.4) 42%, transparent 58%),
+    radial-gradient(1.1px 1.1px at 36% 82%, hsl(210 30% 95% / 0.4) 42%, transparent 58%),
+    radial-gradient(1px 1px at 49% 24%, hsl(45 45% 92% / 0.45) 42%, transparent 58%),
+    radial-gradient(1.2px 1.2px at 61% 74%, hsl(0 0% 100% / 0.38) 42%, transparent 58%),
+    radial-gradient(1px 1px at 70% 44%, hsl(210 30% 95% / 0.42) 42%, transparent 58%),
+    radial-gradient(1.1px 1.1px at 82% 14%, hsl(45 45% 92% / 0.4) 42%, transparent 58%),
+    radial-gradient(1px 1px at 91% 88%, hsl(0 0% 100% / 0.38) 42%, transparent 58%),
+    radial-gradient(1.2px 1.2px at 5% 56%, hsl(210 30% 95% / 0.4) 42%, transparent 58%),
+    radial-gradient(1px 1px at 44% 94%, hsl(45 45% 92% / 0.42) 42%, transparent 58%),
+    radial-gradient(1px 1px at 97% 8%, hsl(0 0% 100% / 0.4) 42%, transparent 58%);
+  animation: star-twinkle 7s ease-in-out -2.8s infinite alternate;
+}
+
+@keyframes star-twinkle {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.dark body::before,
+  html.dark body::after {
+    animation: none;
+  }
+}

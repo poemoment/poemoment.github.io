@@ -1,0 +1,125 @@
+---
+import type { GetStaticPaths, Page } from 'astro'
+import type { CollectionEntry } from 'astro:content'
+import { render } from 'astro:content'
+
+import { Paginator } from 'astro-pure/components/pages'
+import { getBlogCollection, getUniqueTags, sortMDByDate } from 'astro-pure/server'
+import { Button } from 'astro-pure/user'
+import PageLayout from '@/layouts/BaseLayout.astro'
+import config from '@/site-config'
+
+export const prerender = true
+
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
+  const allPosts = await getBlogCollection()
+  const allPostsByDate = sortMDByDate(allPosts)
+  const uniqueTags = getUniqueTags(allPostsByDate)
+
+  return uniqueTags.flatMap((tag) => {
+    const filterPosts = allPostsByDate.filter((post) => post.data.tags.includes(tag))
+    return paginate(filterPosts, {
+      pageSize: config.content.blogPageSize,
+      params: { tag }
+    })
+  })
+}
+
+interface Props {
+  page: Page<CollectionEntry<'blog'>>
+}
+
+const { page } = Astro.props
+const { tag } = Astro.params
+
+const meta = {
+  description: `View all posts with the tag - ${tag}`,
+  title: `Tag: ${tag}`
+}
+
+const paginationProps = {
+  ...(page.url.prev && {
+    prevUrl: {
+      text: `← Previous Tags`,
+      url: page.url.prev
+    }
+  }),
+  ...(page.url.next && {
+    nextUrl: {
+      text: `Next Tags →`,
+      url: page.url.next
+    }
+  })
+}
+---
+
+<PageLayout {meta}>
+  <Button title='Back' href='/blog' style='back' />
+  <main class='mt-6 lg:mt-10'>
+    <div id='content-header' class='animate'>
+      <h1 class='mb-6 flex items-end gap-x-2 text-3xl font-medium'>
+        Tags:
+        <span class='text-2xl'>#{tag}</span>
+      </h1>
+    </div>
+
+    <section id='content' class='animate' aria-label='Blog post list'>
+      <ul class='text-start'>
+        {(
+          await Promise.all(
+            page.data.map(async (post) => {
+              const { remarkPluginFrontmatter } = await render(post)
+              const minutes = Number.parseInt(String(remarkPluginFrontmatter.minutesRead), 10)
+              return { post, minutes: Number.isNaN(minutes) ? null : minutes }
+            })
+          )
+        ).map(({ post, minutes }) => (
+          <li
+            class='rounded-xl border border-transparent px-5 py-3.5 transition-all duration-200 hover:border-foreground/40 hover:bg-background/40 hover:backdrop-blur-md focus-within:border-foreground/40 focus-within:bg-background/40 focus-within:backdrop-blur-md'
+          >
+            <article class='min-w-0'>
+              <div class='mb-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground'>
+                {post.data.pin && <span class='shrink-0 text-primary'>置顶</span>}
+                {post.data.pin && (
+                  <span aria-hidden='true' class='shrink-0 text-border'>
+                    /
+                  </span>
+                )}
+                <time datetime={post.data.publishDate.toISOString()}>
+                  {post.data.publishDate.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </time>
+                {minutes !== null && (
+                  <>
+                    <span aria-hidden='true' class='shrink-0 text-border'>
+                      /
+                    </span>
+                    <span>{minutes} min</span>
+                  </>
+                )}
+              </div>
+              <div class='min-w-0'>
+                <a
+                  href={`/blog/${post.id}`}
+                  class='block min-w-0 text-base font-medium leading-6 hover:text-primary sm:text-lg'
+                  data-astro-prefetch
+                >
+                  {post.data.title}
+                </a>
+                {post.data.description && (
+                  <p class='mt-0.5 text-sm leading-6 text-muted-foreground'>
+                    {post.data.description}
+                  </p>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
+      <Paginator {...paginationProps} />
+    </section>
+  </main>
+</PageLayout>

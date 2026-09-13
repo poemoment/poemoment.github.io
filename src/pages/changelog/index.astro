@@ -1,0 +1,22 @@
+---
+import config from 'virtual:config'
+
+import { Timeline } from 'astro-pure/user'
+import PageLayout from '@/layouts/CommonPage.astro'
+
+// 视觉菜单 ①：改版档案页（学自 rauno.me 的站点版本档案）。
+// 数据源与 /links 页共用 integ.links.logbook，只在此处按时间倒序完整展示。
+const headings = [{ depth: 2, slug: 'logbook', text: '站点日志' }]
+
+const events = [...config.integ.links.logbook].reverse()
+---
+
+<PageLayout title='更新日志' {headings} info='/changelog'>
+  <p>
+    站点被当作一份持续修正的档案，这里记录它自己的演化：每一次结构调整、视觉改版与决定，最新的在最前。
+    设计上的取舍见<a href='/about'>关于页</a>。
+  </p>
+
+  <h2 id='logbook'>站点日志</h2>
+  <Timeline events={events} />
+</PageLayout>

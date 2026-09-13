@@ -1,0 +1,110 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+import { hasLibrary, librarySections } from '@/data/library'
+
+// 视觉菜单 ⑩：书单页（学自 maggieappleton 的 Library / Antilibrary）。
+// 分节按「在读 / 想读 / 读不完」划分，空分节整体隐藏，不渲染占位文案。
+const headings = librarySections
+  .filter((section) => section.items.length > 0)
+  .map((section) => ({ depth: 2 as const, slug: section.key, text: section.name }))
+---
+
+<PageLayout title='书单' {headings} info='/library'>
+  <p>
+    这里只列真实在推进的材料，按状态而不是评价排列。分节本身是诚实的边界：
+    「想读」是队列，「读不完」是承认有些书大概只会以「读过它的想法」的形式留在书架上。
+  </p>
+
+  {
+    hasLibrary ? (
+      librarySections
+        .filter((section) => section.items.length > 0)
+        .map((section) => (
+          <>
+            <h2 id={section.key}>{section.name}</h2>
+            <p class='section-definition'>{section.description}</p>
+            <ul class='library-list'>
+              {section.items.map((item) => (
+                <li>
+                  <span class='item-title'>
+                    {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+                  </span>
+                  {item.source && (
+                    <a class='item-source' href={item.source} target='_blank' rel='noreferrer'>
+                      ↗
+                    </a>
+                  )}
+                  {item.author && <span class='item-author'>{item.author}</span>}
+                  {item.note && <p class='item-note'>{item.note}</p>}
+                </li>
+              ))}
+            </ul>
+          </>
+        ))
+    ) : (
+      <div class='empty-state'>
+        <p>书单还是空的。开始读一本真实的书之后，它会出现在这里。</p>
+      </div>
+    )
+  }
+</PageLayout>
+
+<style>
+  .section-definition {
+    margin: 0 0 0.75rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.88rem;
+  }
+
+  .library-list {
+    margin: 0 0 2.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .library-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .library-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .item-title {
+    font-weight: 600;
+  }
+
+  .item-source {
+    margin-left: 0.4rem;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+  }
+
+  .item-source:hover {
+    color: hsl(var(--primary));
+  }
+
+  .item-author {
+    margin-left: 0.6rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.85rem;
+  }
+
+  .item-note {
+    margin: 0.35rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .empty-state {
+    padding: 2.5rem 0;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.9;
+  }
+
+  .empty-state p {
+    margin: 0;
+  }
+</style>

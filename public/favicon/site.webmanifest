@@ -1,0 +1,19 @@
+{
+  "name": "poemoment",
+  "short_name": "poemoment",
+  "icons": [
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#8c2f39",
+  "background_color": "#faf8f4",
+  "display": "standalone"
+}

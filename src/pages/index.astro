@@ -1,0 +1,694 @@
+---
+import { getCollection, render } from 'astro:content'
+
+import PageLayout from '@/layouts/BaseLayout.astro'
+import { siteColumns } from '@/data/columns'
+import { hasReadingTopics, readingTopics } from '@/data/reading'
+
+export const prerender = true
+
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+)
+// 视觉菜单 ⑧：置顶文章排最前，其余按时间倒序；栏目索引的「最新」仍取纯时间序的 allPosts[0]
+const recentPosts = [...allPosts]
+  .sort((a, b) => {
+    if (a.data.pin !== b.data.pin) return a.data.pin ? -1 : 1
+    return b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+  })
+  .slice(0, 7)
+
+// 阅读时长与 /blog 列表页同源：remark 插件写入的 minutesRead
+const posts = await Promise.all(
+  recentPosts.map(async (post) => {
+    const { remarkPluginFrontmatter } = await render(post)
+    const minutes = Number.parseInt(String(remarkPluginFrontmatter.minutesRead), 10)
+    return { post, minutes: Number.isNaN(minutes) ? null : minutes }
+  })
+)
+
+const archiveEntries = (await getCollection('archive', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+const curatedEntries = (await getCollection('curated', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+
+// 栏目索引：条目数与最新条目都来自真实集合，找不到对应集合的栏目只显示入口
+const columnLatest: Record<
+  string,
+  { count?: number; unit?: string; latest?: { title: string; href: string } }
+> = {
+  blog: {
+    count: allPosts.length,
+    unit: '篇',
+    latest: allPosts[0] && { title: allPosts[0].data.title, href: `/blog/${allPosts[0].id}` }
+  },
+  archive: {
+    count: archiveEntries.length,
+    unit: '条',
+    latest:
+      archiveEntries[0] && { title: archiveEntries[0].data.title, href: `/archive/${archiveEntries[0].id}` }
+  },
+  curated: {
+    count: curatedEntries.length,
+    unit: '条',
+    latest:
+      curatedEntries[0] && { title: curatedEntries[0].data.title, href: `/curated/${curatedEntries[0].id}` }
+  }
+}
+
+// 左栏当前状态：最近一次更新发生在哪个集合
+const recentActivity = [
+  { label: '文章', date: allPosts[0]?.data.publishDate },
+  { label: '随记', date: archiveEntries[0]?.data.date },
+  { label: '收藏', date: curatedEntries[0]?.data.date }
+]
+  .filter((item): item is { label: string; date: Date } => Boolean(item.date))
+  .sort((a, b) => b.date.valueOf() - a.date.valueOf())[0]
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(date)
+    .replace(/\//g, '-')
+---
+
+<PageLayout meta={{ title: '首页' }}>
+  <main class='home-shell' id='content-header'>
+    {/* 首屏：3 / 6 / 3 —— 当前状态 · 最近文章 · 正在理解 */}
+    <section class='first-screen animate' aria-label='最近文章与当前状态'>
+      <aside class='status-col' aria-label='当前状态'>
+        <h2 class='col-title'>状态</h2>
+        {
+          recentActivity && (
+            <p class='status-row'>
+              <span class='status-label'>最近更新</span>
+              <span class='status-value'>
+                <time datetime={recentActivity.date.toISOString()} data-rel>
+                  {formatDate(recentActivity.date)}
+                </time>
+                <span class='status-sep'>·</span>
+                {recentActivity.label}
+              </span>
+            </p>
+          )
+        }
+        {
+          hasReadingTopics && readingTopics[0] && (
+            <p class='status-row'>
+              <span class='status-label'>正在理解</span>
+              <span class='status-value'>{readingTopics[0].title}</span>
+            </p>
+          )
+        }
+        <p class='status-row'>
+          <span class='status-label'>订阅</span>
+          <span class='status-value'><a href='/rss.xml'>RSS</a></span>
+        </p>
+      </aside>
+
+      <div class='posts-col' id='content'>
+        <div class='col-heading'>
+          <h2>最近文章</h2>
+          <a href='/blog' class='col-more'>全部 {allPosts.length} 篇</a>
+        </div>
+        {
+          posts.length ? (
+            <ol class='post-list'>
+              {posts.map(({ post, minutes }) => (
+                <li>
+                  <a
+                    class='post-row'
+                    href={`/blog/${post.id}`}
+                    data-post-row={post.id}
+                    data-published={post.data.publishDate.toISOString()}
+                  >
+                    <div class='post-main'>
+                      <h3>
+                        {/* 视觉菜单 ⑬：未读小圆点（学自 zhheo，强度降级），JS 判定未读后才显示 */}
+                        <span class='unread-dot' data-unread-dot hidden aria-hidden='true' />
+                        {post.data.title}
+                      </h3>
+                      <p>{post.data.description}</p>
+                      <p class='post-meta-line'>
+                        {post.data.pin && (
+                          <>
+                            <span class='meta-pin'>置顶</span>
+                            <span class='meta-sep'>·</span>
+                          </>
+                        )}
+                        <time
+                          datetime={post.data.publishDate.toISOString()}
+                          data-rel
+                          title={formatDate(post.data.publishDate)}
+                        >
+                          {formatDate(post.data.publishDate)}
+                        </time>
+                        {minutes !== null && (
+                          <>
+                            <span class='meta-sep'>·</span>
+                            <span>{minutes} min</span>
+                          </>
+                        )}
+                        <span class='meta-sep'>·</span>
+                        <span class='meta-tag'>{post.data.tags[0] ?? '未分类'}</span>
+                      </p>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div class='empty-state'>
+              <p>还没有公开文章。第一篇写完就会出现在这里。</p>
+              <p class='empty-alt'>
+                现在可以先看<a href='/archive'>随记</a>与<a href='/curated'>收藏</a>。
+              </p>
+            </div>
+          )
+        }
+      </div>
+
+      {
+        hasReadingTopics && (
+          <aside class='reading-col' aria-label='正在理解的主题'>
+            <div class='col-heading'>
+              <h2>正在理解</h2>
+            </div>
+            <ul class='reading-list'>
+              {readingTopics.map((topic) => (
+                <li>
+                  {topic.href ? (
+                    <a class='reading-item' href={topic.href}>
+                      <span class='reading-title'>{topic.title}</span>
+                      <span class='reading-meta'>
+                        <span class='reading-stage'>{topic.stage}</span>
+                        <time datetime={topic.updated} data-rel title={topic.updated}>{topic.updated}</time>
+                      </span>
+                    </a>
+                  ) : (
+                    <div class='reading-item'>
+                      <span class='reading-title'>{topic.title}</span>
+                      <span class='reading-meta'>
+                        <span class='reading-stage'>{topic.stage}</span>
+                        <time datetime={topic.updated} data-rel title={topic.updated}>{topic.updated}</time>
+                      </span>
+                    </div>
+                  )}
+                  {topic.source && <p class='reading-source'>{topic.source}</p>}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </section>
+
+    {/* 第二屏：栏目索引（不是卡片网格） */}
+    <section class='column-index animate' aria-label='栏目索引'>
+      <h2 class='col-title'>栏目</h2>
+      <ul class='column-list'>
+        {
+          siteColumns.map((column) => {
+            const meta = column.collection ? columnLatest[column.collection] : undefined
+            return (
+              <li class='column-row'>
+                <div class='column-name'>
+                  <h3>{column.name}</h3>
+                  {meta?.count !== undefined && (
+                    <span class='column-count'>
+                      {meta.count} {meta.unit}
+                    </span>
+                  )}
+                </div>
+                <div class='column-body'>
+                  <p class='column-definition'>{column.definition}</p>
+                  {meta?.latest && (
+                    <a class='column-latest' href={meta.latest.href}>
+                      最新：{meta.latest.title}
+                    </a>
+                  )}
+                </div>
+                <a class='column-go' href={column.href}>
+                  进入栏目
+                </a>
+              </li>
+            )
+          })
+        }
+      </ul>
+    {/* 首页底部:CG 原图以渐变融入当前主题(不生硬拼贴) */}
+    <div class='home-cg' role='presentation'></div>
+  </main>
+
+  {/* 视觉菜单 ⑫：静态构建时相对时间会过期，构建期渲染绝对日期，客户端再升级为相对时间 */}
+  <script>
+    const relUnits: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+      ['year', 31_536_000_000],
+      ['month', 2_592_000_000],
+      ['week', 604_800_000],
+      ['day', 86_400_000],
+      ['hour', 3_600_000],
+      ['minute', 60_000]
+    ]
+    const fmt = new Intl.RelativeTimeFormat('zh-CN', { numeric: 'auto' })
+    for (const el of document.querySelectorAll<HTMLTimeElement>('time[data-rel]')) {
+      const ts = Date.parse(el.getAttribute('datetime') ?? '')
+      if (Number.isNaN(ts)) continue
+      const diff = ts - Date.now()
+      const [unit, ms] = relUnits.find(([, span]) => Math.abs(diff) >= span) ?? relUnits.at(-1)!
+      el.textContent = fmt.format(Math.round(diff / ms), unit)
+    }
+
+    // 视觉菜单 ⑬：未读小圆点。真实访客行为数据（localStorage），不虚构；
+    // 仅标记 14 天内发布且未读的文章，从首页点进即记为已读。JS 不可用时整组隐藏。
+    const READ_KEY = 'poemoment:read-posts'
+    const UNREAD_WINDOW_MS = 14 * 86_400_000
+    let readSlugs: Set<string>
+    try {
+      readSlugs = new Set(JSON.parse(localStorage.getItem(READ_KEY) ?? '[]') as string[])
+    } catch {
+      readSlugs = new Set()
+    }
+    const persistRead = () => {
+      try {
+        localStorage.setItem(READ_KEY, JSON.stringify([...readSlugs]))
+      } catch {
+        /* 隐私模式等场景下静默放弃，圆点下次仍显示 */
+      }
+    }
+    document.querySelectorAll<HTMLAnchorElement>('[data-post-row]').forEach((row) => {
+      const slug = row.dataset.postRow ?? ''
+      const published = Date.parse(row.dataset.published ?? '')
+      const isUnread =
+        slug !== '' &&
+        !Number.isNaN(published) &&
+        Date.now() - published < UNREAD_WINDOW_MS &&
+        !readSlugs.has(slug)
+      const dot = row.querySelector<HTMLElement>('[data-unread-dot]')
+      if (isUnread && dot) dot.hidden = false
+      row.addEventListener('click', () => {
+        if (!readSlugs.has(slug)) {
+          readSlugs.add(slug)
+          persistRead()
+        }
+      })
+    })
+  </script>
+</PageLayout>
+
+<style>
+  .home-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+    padding-bottom: 4rem;
+  }
+
+  /* ---- 首屏三栏 ---------------------------------------------------------- */
+  .first-screen {
+    display: grid;
+    grid-template-columns: 3fr 6fr 3fr;
+    gap: 2.5rem;
+    padding-top: 0.75rem;
+  }
+
+  .col-title {
+    margin: 0 0 1rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .col-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 0.75rem;
+  }
+
+  .col-heading h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 650;
+  }
+
+  .col-more {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .col-more:hover {
+    color: hsl(var(--primary));
+  }
+
+  /* 左栏：当前状态 */
+  .status-col {
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .status-row {
+    margin: 0 0 0.9rem;
+  }
+
+  .status-label {
+    display: block;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  .status-value {
+    color: hsl(var(--foreground));
+  }
+
+  .status-sep {
+    margin: 0 0.35rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .status-value time,
+  .status-value a {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+
+  /* 中栏：文章行是视觉主角 */
+  .post-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-row {
+    display: block;
+    padding: 1.15rem 0 1.15rem 0.9rem;
+    border-left: 2px solid transparent;
+  }
+
+  .post-main h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    font-weight: 650;
+    line-height: 1.45;
+    transition: color 0.2s ease;
+  }
+
+  /* 视觉菜单 ⑬：未读小圆点，出现在标题前；hidden 态必须显式压过 display */
+  .unread-dot {
+    display: inline-block;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-right: 0.45rem;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    vertical-align: 0.14em;
+  }
+
+  .unread-dot[hidden] {
+    display: none;
+  }
+
+  .post-main p:not(.post-meta-line) {
+    display: -webkit-box;
+    margin: 0.35rem 0 0;
+    overflow: hidden;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.86rem;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* 视觉菜单 ④：间隔号元数据一行（日期 · 阅读时长 · 首个标签），学自 craigmod 的书籍规格排版 */
+  .post-meta-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .post-meta-line .meta-sep {
+    color: hsl(var(--border));
+  }
+
+  .post-meta-line .meta-pin {
+    color: hsl(var(--primary));
+    letter-spacing: 0.05em;
+  }
+
+  .post-meta-line .meta-tag {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 悬停只改变标题颜色与左侧细线 */
+  @media (hover: hover) {
+    .post-row:hover {
+      border-left-color: hsl(var(--primary));
+    }
+
+    .post-row:hover h3 {
+      color: hsl(var(--primary));
+    }
+  }
+
+  .empty-state {
+    padding: 2.5rem 0;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.9;
+  }
+
+  .empty-state p {
+    margin: 0;
+  }
+
+  .empty-alt {
+    font-size: 0.88rem;
+  }
+
+  .empty-alt a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* 右栏：正在理解 */
+  .reading-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reading-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .reading-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .reading-item {
+    display: block;
+    text-decoration: none;
+  }
+
+  .reading-title {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.6;
+    transition: color 0.2s ease;
+  }
+
+  a.reading-item:hover .reading-title {
+    color: hsl(var(--primary));
+  }
+
+  .reading-meta {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .reading-stage {
+    color: hsl(var(--primary));
+  }
+
+  .reading-source {
+    margin: 0.35rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  /* ---- 第二屏：栏目索引 --------------------------------------------------- */
+  .column-index {
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 2.25rem;
+  }
+
+  .column-list {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .column-row {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr) auto;
+    gap: 2rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .column-name {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .column-name h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 650;
+  }
+
+  .column-count {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .column-definition {
+    margin: 0;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.7;
+  }
+
+  .column-latest {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-size: 0.86rem;
+  }
+
+  .column-latest:hover {
+    color: hsl(var(--primary));
+  }
+
+  .column-go {
+    align-self: center;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .column-go:hover {
+    color: hsl(var(--primary));
+  }
+
+  /* ---- 响应式 ------------------------------------------------------------ */
+  @media (max-width: 1024px) {
+    .first-screen {
+      grid-template-columns: minmax(0, 1fr) 16rem;
+    }
+
+    .status-col {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      gap: 0 1.5rem;
+    }
+
+    .status-col .col-title {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* 手机首屏直接进入最近文章 */
+  @media (max-width: 768px) {
+    .home-shell {
+      gap: 3.5rem;
+    }
+
+    .first-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .posts-col {
+      order: 0;
+    }
+
+    .reading-col {
+      order: 1;
+    }
+
+    .status-col {
+      order: 2;
+      display: block;
+    }
+
+    .post-row {
+      padding-left: 0.6rem;
+    }
+
+    .post-main h3 {
+      font-size: 1.02rem;
+    }
+
+    .column-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.6rem;
+    }
+
+    .column-go {
+      justify-self: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-main h3,
+    .reading-title {
+      transition: none;
+    }
+  }
+
+  /* 首页底部:CG 原图以渐变融入当前主题(矮条,取景对准人物,人身露出大半) */
+  .home-cg {
+    margin-inline: calc(50% - 50vw);
+    margin-top: 1rem;
+    height: clamp(260px, 32vh, 420px);
+    background-image: url('/backgrounds/final/cg-home.webp');
+    background-size: cover;
+    background-position: center 55%;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 32%, black 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 32%, black 72%, transparent 100%);
+  }
+
+  html.dark .home-cg {
+    filter: brightness(0.86) saturate(0.96);
+  }
+
+</style>

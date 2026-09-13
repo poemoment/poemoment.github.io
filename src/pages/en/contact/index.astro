@@ -1,0 +1,106 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+
+const headings = [
+  { depth: 2, slug: 'channels', text: 'Channels' },
+  { depth: 2, slug: 'before-writing', text: 'Before Writing' }
+]
+
+const channels = [
+  {
+    name: 'Email',
+    href: 'mailto:hello@example.com',
+    email: 'hello@example.com',
+    note: 'Replace this with your public email address.'
+  },
+  {
+    name: 'GitHub',
+    href: 'https://github.com/yourname',
+    note: 'Replace this with your GitHub profile.'
+  },
+  {
+    name: 'Personal link',
+    href: 'https://example.com',
+    note: 'Use this for a newsletter, calendar, or social profile.'
+  }
+]
+---
+
+<PageLayout title='Contact' {headings} info='/en/contact'>
+  <p>
+    This is the public contact page template. Before publishing, keep only information you are
+    comfortable exposing long term. Private chat IDs, phone numbers, group links, and payment QR
+    codes should stay out of an open-source repository by default.
+  </p>
+
+  <h2 id='channels'>Channels</h2>
+  <ul>
+    {
+      channels.map((item) => (
+        <li>
+          <a href={item.href} target='_blank' rel='noreferrer'>{item.name}</a>
+          {item.email && (
+            <button class='copy-btn' type='button' data-copy-email={item.email}>
+              <span aria-live='polite'>Copy email</span>
+            </button>
+          )}
+          <span> - {item.note}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2 id='before-writing'>Before Writing</h2>
+  <ul>
+    <li>Say who you are, where you found the site, and what you want to discuss.</li>
+    <li>For business, recruiting, reuse, or collaboration, share the context upfront.</li>
+    <li>If you are not ready for public contact details, keep the placeholders for now.</li>
+  </ul>
+</PageLayout>
+
+{/* 视觉菜单 ②：点击复制 + 两态反馈（与中文版 /contact 同款）。clipboard 不可用时提示手动复制。 */}
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy-email]').forEach((btn) => {
+    const label = btn.querySelector('span')
+    let timer: number | undefined
+    btn.addEventListener('click', async () => {
+      const email = btn.dataset.copyEmail ?? ''
+      const ok = await navigator.clipboard
+        .writeText(email)
+        .then(() => true)
+        .catch(() => false)
+      if (!label) return
+      window.clearTimeout(timer)
+      label.textContent = ok ? 'Copied' : 'Copy failed — please select manually'
+      btn.dataset.copied = String(ok)
+      timer = window.setTimeout(() => {
+        label.textContent = 'Copy email'
+        delete btn.dataset.copied
+      }, 1600)
+    })
+  })
+</script>
+
+<style>
+  .copy-btn {
+    margin-left: 0.6rem;
+    padding: 0.1rem 0.65rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .copy-btn:hover,
+  .copy-btn[data-copied='true'] {
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+  }
+</style>

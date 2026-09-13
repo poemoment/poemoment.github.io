@@ -1,0 +1,714 @@
+---
+import { getCollection, render } from 'astro:content'
+
+import PageLayout from '@/layouts/BaseLayout.astro'
+import { siteColumnsEn } from '@/data/columns'
+import { hasReadingTopics, readingTopics } from '@/data/reading'
+
+export const prerender = true
+
+/*
+ * 英文首页 —— 与中文版 / (方案 A「研究档案室」) 逐区对应。
+ * 内容回退规则：en 集合为空时显示中文集合的内容（链接指向中文路由），
+ * 与 i18n 提示「界面已英文、内容翻译进行中」一致；不虚构内容。
+ */
+
+const enPosts = (await getCollection('blogEn', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+)
+const zhPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+)
+const useEnPosts = enPosts.length > 0
+const allPosts = useEnPosts ? enPosts : zhPosts
+
+// 视觉菜单 ⑧：置顶优先，其余按时间倒序
+const recentPosts = [...allPosts]
+  .sort((a, b) => {
+    if (a.data.pin !== b.data.pin) return a.data.pin ? -1 : 1
+    return b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+  })
+  .slice(0, 7)
+
+const posts = await Promise.all(
+  recentPosts.map(async (post) => {
+    const { remarkPluginFrontmatter } = await render(post)
+    const minutes = Number.parseInt(String(remarkPluginFrontmatter.minutesRead), 10)
+    return { post, minutes: Number.isNaN(minutes) ? null : minutes }
+  })
+)
+
+const enArchive = (await getCollection('archiveEn', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+const zhArchive = (await getCollection('archive', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+const useEnArchive = enArchive.length > 0
+const archiveEntries = useEnArchive ? enArchive : zhArchive
+const curatedEntries = (await getCollection('curated', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+
+const postHref = (id: string) => (useEnPosts ? `/en/blog/${id}` : `/blog/${id}`)
+const archiveHref = (id: string) => (useEnArchive ? `/en/archive/${id}` : `/archive/${id}`)
+
+// 栏目索引：条目数与最新条目来自真实集合；blog/archive 在英文站回退中文集合时仍按真实数据计
+const columnLatest: Record<
+  string,
+  { count?: number; unit?: string; latest?: { title: string; href: string } }
+> = {
+  blog: {
+    count: allPosts.length,
+    unit: 'posts',
+    latest: allPosts[0] && { title: allPosts[0].data.title, href: postHref(allPosts[0].id) }
+  },
+  archive: {
+    count: archiveEntries.length,
+    unit: 'entries',
+    latest:
+      archiveEntries[0] && { title: archiveEntries[0].data.title, href: archiveHref(archiveEntries[0].id) }
+  },
+  curated: {
+    count: curatedEntries.length,
+    unit: 'entries',
+    latest:
+      curatedEntries[0] && {
+        title: curatedEntries[0].data.title,
+        href: `/curated/${curatedEntries[0].id}`
+      }
+  }
+}
+
+// 左栏当前状态：最近一次更新发生在哪个集合
+const recentActivity = [
+  { label: 'post', date: allPosts[0]?.data.publishDate },
+  { label: 'note', date: archiveEntries[0]?.data.date },
+  { label: 'collection', date: curatedEntries[0]?.data.date }
+]
+  .filter((item): item is { label: string; date: Date } => Boolean(item.date))
+  .sort((a, b) => b.date.valueOf() - a.date.valueOf())[0]
+
+// 阶段字段的展示级翻译（reading.ts 数据本身保持中文）
+const stageEn: Record<string, string> = {
+  阅读: 'Reading',
+  复现: 'Reproducing',
+  实验: 'Experimenting',
+  整理: 'Writing up'
+}
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(date)
+---
+
+<PageLayout meta={{ title: 'Home' }}>
+  <main class='home-shell' id='content-header'>
+    {/* First screen: 3 / 6 / 3 — status · recent posts · now understanding */}
+    <section class='first-screen animate' aria-label='Recent posts and current status'>
+      <aside class='status-col' aria-label='Current status'>
+        <h2 class='col-title'>Status</h2>
+        {
+          recentActivity && (
+            <p class='status-row'>
+              <span class='status-label'>Latest update</span>
+              <span class='status-value'>
+                <time datetime={recentActivity.date.toISOString()} data-rel>
+                  {formatDate(recentActivity.date)}
+                </time>
+                <span class='status-sep'>·</span>
+                {recentActivity.label}
+              </span>
+            </p>
+          )
+        }
+        {
+          hasReadingTopics && readingTopics[0] && (
+            <p class='status-row'>
+              <span class='status-label'>Now understanding</span>
+              <span class='status-value'>{readingTopics[0].title}</span>
+            </p>
+          )
+        }
+        <p class='status-row'>
+          <span class='status-label'>Subscribe</span>
+          <span class='status-value'><a href='/rss.xml'>RSS</a></span>
+        </p>
+      </aside>
+
+      <div class='posts-col' id='content'>
+        <div class='col-heading'>
+          <h2>Recent posts</h2>
+          <a href='/en/blog' class='col-more'>All {allPosts.length} posts</a>
+        </div>
+        {
+          posts.length ? (
+            <ol class='post-list'>
+              {posts.map(({ post, minutes }) => (
+                <li>
+                  <a
+                    class='post-row'
+                    href={postHref(post.id)}
+                    data-post-row={post.id}
+                    data-published={post.data.publishDate.toISOString()}
+                  >
+                    <div class='post-main'>
+                      <h3>
+                        <span class='unread-dot' data-unread-dot hidden aria-hidden='true' />
+                        {post.data.title}
+                      </h3>
+                      <p>{post.data.description}</p>
+                      <p class='post-meta-line'>
+                        {post.data.pin && (
+                          <>
+                            <span class='meta-pin'>Pinned</span>
+                            <span class='meta-sep'>·</span>
+                          </>
+                        )}
+                        <time
+                          datetime={post.data.publishDate.toISOString()}
+                          data-rel
+                          title={formatDate(post.data.publishDate)}
+                        >
+                          {formatDate(post.data.publishDate)}
+                        </time>
+                        {minutes !== null && (
+                          <>
+                            <span class='meta-sep'>·</span>
+                            <span>{minutes} min</span>
+                          </>
+                        )}
+                        <span class='meta-sep'>·</span>
+                        <span class='meta-tag'>{post.data.tags[0] ?? 'note'}</span>
+                      </p>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div class='empty-state'>
+              <p>No public posts yet. The first one will appear here.</p>
+              <p class='empty-alt'>
+                Meanwhile you can browse <a href='/en/archive'>notes</a> and{' '}
+                <a href='/en/curated'>curated</a>.
+              </p>
+            </div>
+          )
+        }
+        {
+          !useEnPosts && posts.length > 0 && (
+            <p class='lang-fallback'>Posts are shown in the original language while translation is in progress.</p>
+          )
+        }
+      </div>
+
+      {
+        hasReadingTopics && (
+          <aside class='reading-col' aria-label='Topics under study'>
+            <div class='col-heading'>
+              <h2>Now understanding</h2>
+            </div>
+            <ul class='reading-list'>
+              {readingTopics.map((topic) => (
+                <li>
+                  {topic.href ? (
+                    <a class='reading-item' href={topic.href}>
+                      <span class='reading-title'>{topic.title}</span>
+                      <span class='reading-meta'>
+                        <span class='reading-stage'>{stageEn[topic.stage] ?? topic.stage}</span>
+                        <time datetime={topic.updated} data-rel title={topic.updated}>
+                          {topic.updated}
+                        </time>
+                      </span>
+                    </a>
+                  ) : (
+                    <div class='reading-item'>
+                      <span class='reading-title'>{topic.title}</span>
+                      <span class='reading-meta'>
+                        <span class='reading-stage'>{stageEn[topic.stage] ?? topic.stage}</span>
+                        <time datetime={topic.updated} data-rel title={topic.updated}>
+                          {topic.updated}
+                        </time>
+                      </span>
+                    </div>
+                  )}
+                  {topic.source && <p class='reading-source'>{topic.source}</p>}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </section>
+
+    {/* Second screen: section index (rows, not cards) */}
+    <section class='column-index animate' aria-label='Section index'>
+      <h2 class='col-title'>Sections</h2>
+      <ul class='column-list'>
+        {
+          siteColumnsEn.map((column) => {
+            const meta = column.collection ? columnLatest[column.collection] : undefined
+            return (
+              <li class='column-row'>
+                <div class='column-name'>
+                  <h3>{column.name}</h3>
+                  {meta?.count !== undefined && (
+                    <span class='column-count'>
+                      {meta.count} {column.unit || meta.unit}
+                    </span>
+                  )}
+                </div>
+                <div class='column-body'>
+                  <p class='column-definition'>{column.definition}</p>
+                  {meta?.latest && (
+                    <a class='column-latest' href={meta.latest.href}>
+                      Latest: {meta.latest.title}
+                    </a>
+                  )}
+                </div>
+                <a class='column-go' href={column.href}>
+                  Browse
+                </a>
+              </li>
+            )
+          })
+        }
+      </ul>
+    </section>
+  </main>
+
+  {/* 视觉菜单 ⑫/⑬：相对时间 + 未读圆点（与中文首页同一套脚本，语言为 en-US） */}
+  <script>
+    const relUnits: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+      ['year', 31_536_000_000],
+      ['month', 2_592_000_000],
+      ['week', 604_800_000],
+      ['day', 86_400_000],
+      ['hour', 3_600_000],
+      ['minute', 60_000]
+    ]
+    const fmt = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' })
+    for (const el of document.querySelectorAll<HTMLTimeElement>('time[data-rel]')) {
+      const ts = Date.parse(el.getAttribute('datetime') ?? '')
+      if (Number.isNaN(ts)) continue
+      const diff = ts - Date.now()
+      const [unit, ms] = relUnits.find(([, span]) => Math.abs(diff) >= span) ?? relUnits.at(-1)!
+      el.textContent = fmt.format(Math.round(diff / ms), unit)
+    }
+
+    const READ_KEY = 'poemoment:read-posts'
+    const UNREAD_WINDOW_MS = 14 * 86_400_000
+    let readSlugs: Set<string>
+    try {
+      readSlugs = new Set(JSON.parse(localStorage.getItem(READ_KEY) ?? '[]') as string[])
+    } catch {
+      readSlugs = new Set()
+    }
+    const persistRead = () => {
+      try {
+        localStorage.setItem(READ_KEY, JSON.stringify([...readSlugs]))
+      } catch {
+        /* private mode etc. — dots simply reappear next visit */
+      }
+    }
+    document.querySelectorAll<HTMLAnchorElement>('[data-post-row]').forEach((row) => {
+      const slug = row.dataset.postRow ?? ''
+      const published = Date.parse(row.dataset.published ?? '')
+      const isUnread =
+        slug !== '' &&
+        !Number.isNaN(published) &&
+        Date.now() - published < UNREAD_WINDOW_MS &&
+        !readSlugs.has(slug)
+      const dot = row.querySelector<HTMLElement>('[data-unread-dot]')
+      if (isUnread && dot) dot.hidden = false
+      row.addEventListener('click', () => {
+        if (!readSlugs.has(slug)) {
+          readSlugs.add(slug)
+          persistRead()
+        }
+      })
+    })
+  </script>
+</PageLayout>
+
+<style>
+  .home-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+    padding-bottom: 4rem;
+  }
+
+  /* ---- First screen: 3 columns ------------------------------------------- */
+  .first-screen {
+    display: grid;
+    grid-template-columns: 3fr 6fr 3fr;
+    gap: 2.5rem;
+    padding-top: 0.75rem;
+  }
+
+  .col-title {
+    margin: 0 0 1rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .col-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 0.75rem;
+  }
+
+  .col-heading h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 650;
+  }
+
+  .col-more {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .col-more:hover {
+    color: hsl(var(--primary));
+  }
+
+  /* Status column */
+  .status-col {
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .status-row {
+    margin: 0 0 0.9rem;
+  }
+
+  .status-label {
+    display: block;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  .status-value {
+    color: hsl(var(--foreground));
+  }
+
+  .status-sep {
+    margin: 0 0.35rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .status-value time,
+  .status-value a {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+
+  /* Posts column: rows are the visual protagonist */
+  .post-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-row {
+    display: block;
+    padding: 1.15rem 0 1.15rem 0.9rem;
+    border-left: 2px solid transparent;
+  }
+
+  .post-main h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    font-weight: 650;
+    line-height: 1.45;
+    transition: color 0.2s ease;
+  }
+
+  .unread-dot {
+    display: inline-block;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-right: 0.45rem;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    vertical-align: 0.14em;
+  }
+
+  .unread-dot[hidden] {
+    display: none;
+  }
+
+  .post-main p:not(.post-meta-line) {
+    display: -webkit-box;
+    margin: 0.35rem 0 0;
+    overflow: hidden;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.86rem;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .post-meta-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .post-meta-line .meta-sep {
+    color: hsl(var(--border));
+  }
+
+  .post-meta-line .meta-pin {
+    color: hsl(var(--primary));
+    letter-spacing: 0.05em;
+  }
+
+  .post-meta-line .meta-tag {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lang-fallback {
+    margin: 0.9rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.78rem;
+    font-style: italic;
+  }
+
+  @media (hover: hover) {
+    .post-row:hover {
+      border-left-color: hsl(var(--primary));
+    }
+
+    .post-row:hover h3 {
+      color: hsl(var(--primary));
+    }
+  }
+
+  .empty-state {
+    padding: 2.5rem 0;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.9;
+  }
+
+  .empty-state p {
+    margin: 0;
+  }
+
+  .empty-alt {
+    font-size: 0.88rem;
+  }
+
+  .empty-alt a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Reading column */
+  .reading-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reading-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .reading-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .reading-item {
+    display: block;
+    text-decoration: none;
+  }
+
+  .reading-title {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.6;
+    transition: color 0.2s ease;
+  }
+
+  a.reading-item:hover .reading-title {
+    color: hsl(var(--primary));
+  }
+
+  .reading-meta {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .reading-stage {
+    color: hsl(var(--primary));
+  }
+
+  .reading-source {
+    margin: 0.35rem 0 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  /* ---- Second screen: section index -------------------------------------- */
+  .column-index {
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 2.25rem;
+  }
+
+  .column-list {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .column-row {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr) auto;
+    gap: 2rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .column-name {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .column-name h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 650;
+  }
+
+  .column-count {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .column-definition {
+    margin: 0;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.7;
+  }
+
+  .column-latest {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-size: 0.86rem;
+  }
+
+  .column-latest:hover {
+    color: hsl(var(--primary));
+  }
+
+  .column-go {
+    align-self: center;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .column-go:hover {
+    color: hsl(var(--primary));
+  }
+
+  /* ---- Responsive ---------------------------------------------------------- */
+  @media (max-width: 1024px) {
+    .first-screen {
+      grid-template-columns: minmax(0, 1fr) 16rem;
+    }
+
+    .status-col {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      gap: 0 1.5rem;
+    }
+
+    .status-col .col-title {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .home-shell {
+      gap: 3.5rem;
+    }
+
+    .first-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .posts-col {
+      order: 0;
+    }
+
+    .reading-col {
+      order: 1;
+    }
+
+    .status-col {
+      order: 2;
+      display: block;
+    }
+
+    .post-row {
+      padding-left: 0.6rem;
+    }
+
+    .post-main h3 {
+      font-size: 1.02rem;
+    }
+
+    .column-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.6rem;
+    }
+
+    .column-go {
+      justify-self: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-main h3,
+    .reading-title {
+      transition: none;
+    }
+  }
+</style>

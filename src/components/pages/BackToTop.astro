@@ -1,0 +1,165 @@
+---
+// 本地增强版 BackToTop：在 astro-pure 原版基础上加入环绕按钮的阅读进度圆环
+// （数字百分比 + 圆环进度 + 悬停/读完切换为箭头）
+import { Icon } from 'astro-pure/user'
+
+const { header: headerName, content: contentName, needPercent = true } = Astro.props
+
+// viewBox 48x48，半径 21.5 → 周长 2πr ≈ 135.09
+const RING_CIRCUMFERENCE = 135.09
+---
+
+<div
+  class='z-10 group fixed bottom-8 end-4 transition-all flex flex-col gap-y-4 sm:end-8'
+  id='action-buttons'
+>
+  <slot name='other-icons' />
+  <button
+    aria-label='Back to Top'
+    class='relative size-14 flex items-center justify-center rounded-full border-2 border-transparent bg-card/85 text-foreground shadow-lg backdrop-blur-md duration-300 hover:border-primary/60 opacity-0'
+    id='to-top-btn'
+  >
+    <svg
+      class='progress-ring absolute inset-0 size-full -rotate-90'
+      viewBox='0 0 48 48'
+      aria-hidden='true'
+      id='progress-ring'
+    >
+      <circle
+        cx='24'
+        cy='24'
+        r='21.5'
+        fill='none'
+        stroke='hsl(var(--border) / 0.6)'
+        stroke-width='3'></circle>
+      <circle
+        id='progress-ring-bar'
+        cx='24'
+        cy='24'
+        r='21.5'
+        fill='none'
+        stroke='hsl(var(--primary))'
+        stroke-width='3'
+        stroke-linecap='round'
+        stroke-dasharray={RING_CIRCUMFERENCE}
+        stroke-dashoffset={RING_CIRCUMFERENCE}></circle>
+    </svg>
+    <div
+      class='top-text absolute bottom-0 end-0 start-0 top-0 flex items-center justify-center'
+    >
+      <span class='text text-[15px] font-medium'>0</span>
+      <span class='% text-[10px]'>%</span>
+    </div>
+    <Icon name='up' class='top-icon size-5 group-[.ended]:opacity-100' />
+  </button>
+</div>
+
+<script is:inline define:vars={{ headerName, contentName, needPercent }}>
+  const RING_CIRCUMFERENCE = 135.09
+  const actionBtns = document.getElementById('action-buttons')
+  const scrollBtn = document.getElementById('to-top-btn')
+  const scrollPercentEl = scrollBtn.querySelector('.top-text .text')
+  const ringEl = document.getElementById('progress-ring')
+  const ringBar = document.getElementById('progress-ring-bar')
+  const targetHeader = document.getElementById(headerName)
+  const articleElement = document.getElementById(contentName)
+
+  function setRing(percent) {
+    const clamped = Math.min(100, Math.max(0, percent))
+    ringBar.style.strokeDashoffset = (RING_CIRCUMFERENCE * (1 - clamped / 100)).toFixed(2)
+  }
+
+  // 按钮出现/隐藏：标题离开视口才显示
+  function callback(entries) {
+    entries.forEach((entry) => {
+      actionBtns.classList.toggle('show', !entry.isIntersecting)
+    })
+  }
+  scrollBtn.addEventListener('click', () => {
+    document.documentElement.scrollTo({ behavior: 'smooth', top: 0 })
+  })
+  if (targetHeader) {
+    const observer = new IntersectionObserver(callback)
+    observer.observe(targetHeader)
+  } else {
+    console.error(`Element with ID ${headerName} not found.`)
+  }
+
+  if (needPercent && articleElement) {
+    function calculateScrollPercent() {
+      // 每次滚动重新读取尺寸，避免图片懒加载导致的高度失真
+      const scrollHeight = articleElement.scrollHeight
+      const articleTop = articleElement.offsetTop
+      const clientHeight = document.documentElement.clientHeight
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      // 未滚到文章开头:进度 0(球此时由标题可见性控制显隐)
+      if (scrollTop < articleTop) return 0
+      // 文章比视口还短(或等高):没有可滚区间,滚过即算读完
+      const denominator = scrollHeight - clientHeight
+      if (denominator <= 0) return 100
+      // 双重钳制,杜绝负数与超过 100
+      return Math.min(100, Math.max(0, Math.round(((scrollTop - articleTop) / denominator) * 100)))
+    }
+
+    function onScroll() {
+      const scrollPercent = calculateScrollPercent()
+      scrollPercentEl.innerText = scrollPercent.toString()
+      setRing(scrollPercent)
+      actionBtns.classList.toggle('ended', scrollPercent >= 100)
+    }
+
+    document.addEventListener('scroll', onScroll)
+    // 初始执行一次：处理刷新后停留在页面中部的情况
+    onScroll()
+  } else {
+    actionBtns.classList.add('ended')
+    if (ringEl) ringEl.style.display = 'none'
+  }
+</script>
+
+<style>
+  #action-buttons {
+    transform: translateY(4rem);
+    &.show {
+      transform: translateY(0);
+      & #to-top-btn {
+        opacity: 1;
+      }
+    }
+
+    /* To top button status change */
+    & #to-top-btn {
+      & .top-text,
+      & .top-icon {
+        transition-property: opacity;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+      }
+      & .top-text {
+        opacity: 1;
+      }
+      & .top-icon {
+        opacity: 0;
+      }
+    }
+    &.ended #to-top-btn,
+    & #to-top-btn:hover {
+      & .top-text {
+        opacity: 0;
+      }
+      & .top-icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  .progress-ring circle {
+    transition: stroke-dashoffset 80ms linear;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-ring circle {
+      transition: none;
+    }
+  }
+</style>
