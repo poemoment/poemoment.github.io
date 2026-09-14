@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content'
 
 import PageLayout from '@/layouts/BaseLayout.astro'
+import CgBackdrop from '@/components/home/CgBackdrop.astro'
 import { siteColumns } from '@/data/columns'
 import { hasReadingTopics, readingTopics } from '@/data/reading'
 
@@ -237,8 +238,8 @@ const formatDate = (date: Date) =>
           })
         }
       </ul>
-    {/* 首页底部:CG 原图以渐变融入当前主题(不生硬拼贴) */}
-    <div class='home-cg' role='presentation'></div>
+    {/* 首页底部:CG 原图以渐变融入当前主题 */}
+    <CgBackdrop />
   </main>
 
   {/* 视觉菜单 ⑫：静态构建时相对时间会过期，构建期渲染绝对日期，客户端再升级为相对时间 */}
@@ -674,21 +675,4 @@ const formatDate = (date: Date) =>
       transition: none;
     }
   }
-
-  /* 首页底部:CG 原图以渐变融入当前主题(矮条,取景对准人物,人身露出大半) */
-  .home-cg {
-    margin-inline: calc(50% - 50vw);
-    margin-top: 1rem;
-    height: clamp(260px, 32vh, 420px);
-    background-image: url('/backgrounds/final/cg-home.webp');
-    background-size: cover;
-    background-position: center 55%;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 32%, black 72%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 32%, black 72%, transparent 100%);
-  }
-
-  html.dark .home-cg {
-    filter: brightness(0.86) saturate(0.96);
-  }
-
 </style>

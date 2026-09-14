@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content'
 
+import CgBackdrop from '@/components/home/CgBackdrop.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import { siteColumnsEn } from '@/data/columns'
 import { hasReadingTopics, readingTopics } from '@/data/reading'
@@ -275,6 +276,7 @@ const formatDate = (date: Date) =>
         }
       </ul>
     </section>
+    <CgBackdrop />
   </main>
 
   {/* 视觉菜单 ⑫/⑬：相对时间 + 未读圆点（与中文首页同一套脚本，语言为 en-US） */}

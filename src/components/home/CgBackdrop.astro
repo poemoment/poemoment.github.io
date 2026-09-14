@@ -1,0 +1,38 @@
+---
+/**
+ * 页面底部的 CG 渐变融合图(用户提供的插画)。
+ * 用双向渐隐的 mask 让插图从页面背景中浮现、再化回背景,避免生硬拼贴;
+ * 深色模式下轻微压暗。首页、搜索页与英文首页共用。
+ */
+---
+
+<div class='cg-backdrop' role='presentation' aria-hidden='true'></div>
+
+<style>
+  .cg-backdrop {
+    margin-inline: calc(50% - 50vw);
+    margin-top: 1rem;
+    height: clamp(260px, 32vh, 420px);
+    background-image: url('/backgrounds/final/cg-home.webp');
+    background-size: cover;
+    background-position: center 55%;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 32%,
+      black 72%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 32%,
+      black 72%,
+      transparent 100%
+    );
+  }
+
+  :global(html.dark) .cg-backdrop {
+    filter: brightness(0.86) saturate(0.96);
+  }
+</style>
