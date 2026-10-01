@@ -1,15 +1,11 @@
-import type {
-  CardListData,
-  Config,
-  IntegrationUserConfig,
-  ThemeUserConfig
-} from 'astro-pure/types'
+import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types'
+
+import { profileLinks } from './data/profile'
 
 export const theme: ThemeUserConfig = {
   title: 'poemoment',
   author: 'poemoment',
-  description:
-    'poemoment 的个人博客：以长期理解为目标的技术学习笔记、实践记录与公开思考。',
+  description: 'poemoment 的个人博客：以长期理解为目标的技术学习笔记、实践记录与公开思考。',
   favicon: '/favicon/favicon.ico',
   locale: {
     lang: 'zh-CN',
@@ -41,6 +37,7 @@ export const theme: ThemeUserConfig = {
   },
   footer: {
     links: [
+      { title: '联系', link: '/contact', pos: 1 },
       // 视觉菜单 ③：页脚迷你导航（学自 rauno.me）——次级页面入口收在页脚，不占主导航
       {
         title: '更新日志',
@@ -65,7 +62,7 @@ export const theme: ThemeUserConfig = {
     ],
     credits: true,
     social: {
-      github: 'https://github.com/'
+      github: profileLinks.github
     }
   },
   content: {

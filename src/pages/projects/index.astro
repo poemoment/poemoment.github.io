@@ -1,66 +1,61 @@
 ---
+import { profileLinks } from '@/data/profile'
+
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
-  { depth: 2, slug: 'featured', text: 'Featured' },
-  { depth: 2, slug: 'experiments', text: 'Experiments' },
-  { depth: 2, slug: 'credits', text: 'Credits' }
+  { depth: 2, slug: 'featured', text: '公开项目' },
+  { depth: 2, slug: 'experiments', text: '站内探索' },
+  { depth: 2, slug: 'credits', text: '开源基础' }
 ]
 ---
 
-<PageLayout title='Projects' {headings} info={{ slug: '/projects', hideComment: true }}>
+<PageLayout title='项目' {headings}>
+  <p>这里记录已经公开的作品，以及博客中可以直接体验的功能。</p>
+
+  <h2 id='featured'>公开项目</h2>
+  <ProjectSection
+    project={[
+      {
+        name: 'poemoment · 个人博客',
+        description: '基于 Astro 的个人博客，记录技术学习、实践与公开思考，源码托管于 GitHub。',
+        links: [
+          { type: 'site', href: profileLinks.website },
+          { type: 'github', href: profileLinks.repository }
+        ]
+      }
+    ]}
+  />
+
+  <h2 id='experiments'>站内探索</h2>
+  <ProjectSection
+    project={[
+      {
+        name: '站内终端',
+        description: '用目录与命令探索博客内容，支持搜索、阅读与主题切换。',
+        links: [{ type: 'site', href: '/terminal' }]
+      },
+      {
+        name: 'Agent 资料收藏',
+        description: '筛选值得阅读的课程、工程实践与开源仓库，附上收录理由。',
+        links: [{ type: 'doc', href: '/curated' }]
+      }
+    ]}
+  />
+
   <p>
-    这里展示你的公开项目。建议只放你愿意让别人点开看的仓库、演示站、文档或作品集条目。
+    其他公开仓库可以在 <a href={profileLinks.github}>GitHub 主页</a>查看；网站问题可通过 <a
+      href={profileLinks.issues}>仓库 Issues</a
+    >反馈。
   </p>
 
-  <h2 id='featured'>Featured</h2>
-  <ProjectSection
-    project={[
-      {
-        name: 'Personal Blog',
-        description: 'The public repository for this blog and front-end template.',
-        links: [
-          { type: 'github', href: 'https://github.com/yourname/your-blog' },
-          { type: 'site', href: 'https://example.com' }
-        ]
-      },
-      {
-        name: 'Portfolio Project',
-        description: 'Replace this with a shipped app, research demo, or design prototype.',
-        links: [
-          { type: 'github', href: 'https://github.com/yourname/portfolio-project' }
-        ]
-      }
-    ]}
-  />
-
-  <h2 id='experiments'>Experiments</h2>
-  <ProjectSection
-    project={[
-      {
-        name: 'Learning Notes',
-        description: 'A public notes repo, reading list, or course project can live here.',
-        links: [
-          { type: 'github', href: 'https://github.com/yourname/learning-notes' }
-        ]
-      },
-      {
-        name: 'Small Tool',
-        description: 'A tiny utility is often easier for readers to understand than a giant app.',
-        links: [
-          { type: 'github', href: 'https://github.com/yourname/small-tool' }
-        ]
-      }
-    ]}
-  />
-
-  <h2 id='credits'>Credits</h2>
+  <h2 id='credits'>开源基础</h2>
   <ProjectSection
     project={[
       {
         name: 'Astro Theme Pure',
-        description: 'The upstream theme foundation used by this template.',
+        description: '本站使用的开源主题基础。',
         links: [
           { type: 'github', href: 'https://github.com/cworld1/astro-theme-pure' },
           { type: 'site', href: 'https://astro-pure.js.org/' }

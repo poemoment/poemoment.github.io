@@ -8,12 +8,15 @@
  * Hostname-style label for the FS root. Surfaced in the prompt host
  * segment and as the prefix of `pwd` output.
  */
+import { profileLinks } from '@/data/profile'
+
 export const ROOT_LABEL = 'local-site'
 
 export const SOCIAL_LINKS: { label: string; href: string }[] = [
-  { label: 'github', href: 'https://github.com/yourname' },
-  { label: 'mail', href: 'mailto:hello@example.com' },
-  { label: 'home', href: 'http://localhost:4321/' }
+  { label: 'github', href: profileLinks.github },
+  { label: 'source', href: profileLinks.repository },
+  { label: 'contact', href: '/contact' },
+  { label: 'home', href: '/' }
 ]
 
 export const README_TEXT = `local-site - a pseudo-FS over this template.

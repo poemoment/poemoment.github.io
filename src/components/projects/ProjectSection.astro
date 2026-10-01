@@ -70,7 +70,8 @@ const projectIconSet: Record<string, iconsType> = {
               <a
                 class='project-title font-medium text-foreground no-underline transition-colors'
                 href={project.links[0].href}
-                target='_blank'
+                target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
+                rel={/^https?:\/\//.test(project.links[0].href) ? 'noopener noreferrer' : undefined}
               >
                 {project.name}
               </a>
@@ -84,8 +85,9 @@ const projectIconSet: Record<string, iconsType> = {
                     <a
                       href={link.href}
                       class='rounded-full bg-muted p-1 text-muted-foreground transition-colors sm:p-1.5'
-                      aria-label={link.type}
-                      target='_blank'
+                      aria-label={`${project.name} · ${link.type}`}
+                      target={/^https?:\/\//.test(link.href) ? '_blank' : undefined}
+                      rel={/^https?:\/\//.test(link.href) ? 'noopener noreferrer' : undefined}
                     >
                       <Icon class='size-5' name={icon} />
                     </a>

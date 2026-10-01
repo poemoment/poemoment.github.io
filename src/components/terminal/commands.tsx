@@ -3,11 +3,7 @@ import { searchLocal } from '@/lib/search-client'
 import { SOCIAL_LINKS } from './fs/content'
 import { displayPath, getNode, parentOf, prettyPath, resolvePath } from './fs/path'
 import type { DirNode, FsNode } from './fs/types'
-import type {
-  CommandRegistry,
-  CompletionContext,
-  OutputLine
-} from './types'
+import type { CommandRegistry, CompletionContext, OutputLine } from './types'
 
 type SearchApiResult = {
   collection: 'blog' | 'archive'
@@ -90,7 +86,11 @@ export const commands: CommandRegistry = {
           )
         })),
         { kind: 'spacer' },
-        { kind: 'text', tone: 'muted', text: 'shortcuts: ↑/↓ history · tab complete · ⌃L clear · ` focus' }
+        {
+          kind: 'text',
+          tone: 'muted',
+          text: 'shortcuts: ↑/↓ history · tab complete · ⌃L clear · ` focus'
+        }
       ])
     }
   },
@@ -110,8 +110,16 @@ export const commands: CommandRegistry = {
           )
         },
         { kind: 'text', tone: 'muted', text: '  ↳ replace this line with your role or short bio' },
-        { kind: 'text', tone: 'muted', text: '  ↳ replace this line with a current project or focus area' },
-        { kind: 'text', tone: 'muted', text: '  ↳ replace this line with a small personality detail' },
+        {
+          kind: 'text',
+          tone: 'muted',
+          text: '  ↳ replace this line with a current project or focus area'
+        },
+        {
+          kind: 'text',
+          tone: 'muted',
+          text: '  ↳ replace this line with a small personality detail'
+        },
         { kind: 'spacer' },
         { kind: 'text', tone: 'muted', text: 'next: try `ls`, `cat about`, or `cd /blog`' }
       ])
@@ -455,23 +463,20 @@ export const commands: CommandRegistry = {
 
   mail: {
     name: 'mail',
-    summary: 'send me an email',
+    summary: 'show contact channels',
     run: ({ push }) => {
-      const href = 'mailto:hello@example.com?subject=hello'
+      const href = window.location.pathname.startsWith('/en') ? '/en/contact' : '/contact'
       push([
-        { kind: 'text', tone: 'muted', text: 'opening your mail client…' },
+        { kind: 'text', tone: 'muted', text: 'Contact via GitHub or report a blog issue:' },
         {
           kind: 'node',
           node: (
             <a className='wt-link' href={href}>
-              hello@example.com
+              Contact page
             </a>
           )
         }
       ])
-      setTimeout(() => {
-        if (typeof window !== 'undefined') window.location.href = href
-      }, 200)
     }
   },
 
@@ -567,7 +572,9 @@ export const commands: CommandRegistry = {
         ])
         return
       }
-      push([{ kind: 'text', tone: 'err', text: 'Permission denied (you are not in the sudoers file).' }])
+      push([
+        { kind: 'text', tone: 'err', text: 'Permission denied (you are not in the sudoers file).' }
+      ])
     }
   }
 }
@@ -625,16 +632,11 @@ function commonPrefix(items: string[]): string {
  *   - an array  → ambiguous, show as suggestions
  *   - null      → nothing to do
  */
-export function completeInput(
-  input: string,
-  ctx: CompletionContext
-): string | string[] | null {
+export function completeInput(input: string, ctx: CompletionContext): string | string[] | null {
   const hasSpace = /\s/.test(input)
   if (!hasSpace) {
     const head = input.trimStart()
-    const candidates = commandNames.filter(
-      (n) => n.startsWith(head) && !commands[n].hidden
-    )
+    const candidates = commandNames.filter((n) => n.startsWith(head) && !commands[n].hidden)
     if (candidates.length === 0) return null
     if (candidates.length === 1) return candidates[0] + ' '
     const lcp = commonPrefix(candidates)
