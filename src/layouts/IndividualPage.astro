@@ -1,7 +1,7 @@
 ---
 import type { MarkdownHeading, MarkdownLayoutProps } from 'astro'
 
-import { TOC } from 'astro-pure/components/pages'
+import TOC from '@/components/toc/TOC.astro'
 
 import { Button, Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
@@ -21,10 +21,11 @@ type Props = MarkdownLayoutProps<{
 const { frontmatter, headings } = Astro.props
 const { title, description, heroImage, language, back } = frontmatter
 const socialImage = heroImage?.src ?? '/images/social-card.png'
+const isEn = Astro.url.pathname.startsWith('/en')
 ---
 
 <PageLayout meta={{ title, description, ogImage: socialImage }}>
-  <Button title='Back' href={back ?? '/'} style='back' />
+  <Button title={isEn ? 'Back' : '返回'} href={back ?? '/'} style='back' />
   <main class='mt-6 items-start gap-x-10 md:flex lg:mt-10'>
     {
       !!headings.length && (

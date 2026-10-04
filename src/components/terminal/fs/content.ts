@@ -15,7 +15,7 @@ export const ROOT_LABEL = 'local-site'
 export const SOCIAL_LINKS: { label: string; href: string }[] = [
   { label: 'github', href: profileLinks.github },
   { label: 'source', href: profileLinks.repository },
-  { label: 'contact', href: '/contact' },
+  { label: 'contact', href: '/contact/' },
   { label: 'home', href: '/' }
 ]
 

@@ -69,7 +69,7 @@ const meta = {
 
     {description && <p class='text-lg text-muted-foreground'>{description}</p>}
 
-    <PageInfo class='mt-2 italic' path={`/en/archive/${entry.data.translationKey}`} />
+    <PageInfo class='mt-2 italic' path={`/en/archive/${entry.data.translationKey}/`} />
 
     <div class='mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground'>
       <div class='flex items-center gap-2'>
@@ -119,7 +119,7 @@ const meta = {
       <p class='text-sm text-muted-foreground'>
         🗂️ A {typeLabels[type]?.toLowerCase().replace(/^.. /, '') || type} from the knowledge base.
       </p>
-      <Button title='← Back' href='/en/archive' style='back' />
+      <Button title='← Back' href='/en/archive/' style='back' />
     </div>
   </div>
 </PageLayout>

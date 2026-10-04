@@ -6,11 +6,12 @@ import type { CollectionEntry } from 'astro:content'
 import 'katex/dist/katex.min.css'
 
 import { MediumZoom } from 'astro-pure/advanced'
-import { ArticleBottom, Hero, TOC } from 'astro-pure/components/pages'
+import { ArticleBottom, Hero } from 'astro-pure/components/pages'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import Comment from '@/components/comment/Comment.astro'
 import Copyright from '@/components/pages/Copyright.astro'
 import HeroEn from '@/components/HeroEn.astro'
+import TOC from '@/components/toc/TOC.astro'
 import { integ } from '@/site-config'
 
 interface Props {
@@ -43,6 +44,23 @@ const {
 // English mirrors (id ends in `.en`) reuse the Chinese post's OG image.
 const socialImage = `/og/blog/${id.replace(/\.en$/, '')}.png`
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
+
+// 主题 Hero 直接展示 minutesRead 原文(形如 "5 min read"),中文站转成「约 5 分钟」
+const heroFrontmatter =
+  !enHero && typeof remarkPluginFrontmatter.minutesRead === 'string'
+    ? {
+        ...remarkPluginFrontmatter,
+        minutesRead: (remarkPluginFrontmatter.minutesRead as string).replace(
+          /^(\d+)\s*min read$/,
+          '约 $1 分钟'
+        )
+      }
+    : remarkPluginFrontmatter
+
+// 主题 Hero 内部引用的是主题自带的 PageInfo(未经我们的 waline 守卫),
+// waline 未启用时强制 comment=false,避免渲染没有数字的 views/comments 残片
+const walineOn = integ.waline.enable && !!integ.waline.server
+const heroData = walineOn ? data : { ...data, comment: false }
 ---
 
 <PageLayout
@@ -54,9 +72,9 @@ const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
 
   {
     enHero ? (
-      <HeroEn {data} {remarkPluginFrontmatter} slot='header' />
+      <HeroEn data={heroData} {remarkPluginFrontmatter} slot='header' />
     ) : (
-      <Hero {data} {remarkPluginFrontmatter} slot='header' />
+      <Hero data={heroData} remarkPluginFrontmatter={heroFrontmatter} slot='header' />
     )
   }
 

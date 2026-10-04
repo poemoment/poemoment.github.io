@@ -73,7 +73,7 @@ const paginationProps = {
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/archive' style='back' />
+  <Button title='返回' href='/archive/' style='back' />
 
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
@@ -91,7 +91,7 @@ const paginationProps = {
         {
           page.data.map((entry) => (
             <li class='group relative rounded-lg border border-border bg-card p-4 transition hover:border-foreground/20 hover:shadow-sm'>
-              <a href={`/archive/${entry.id}`} class='block' data-astro-prefetch>
+              <a href={`/archive/${entry.id}/`} class='block' data-astro-prefetch>
                 <div class='mb-2 flex items-start gap-3'>
                   <div class='mt-0.5 shrink-0 text-xl opacity-70 group-hover:opacity-100'>
                     {entry.data.type === 'note' && '📝'}
@@ -129,7 +129,7 @@ const paginationProps = {
                       </time>
                       {entry.data.updatedDate && (
                         <span>
-                          · Updated{' '}
+                          · 更新于{' '}
                           {entry.data.updatedDate.toLocaleDateString('zh-CN', {
                             month: 'short',
                             day: 'numeric'

@@ -12,6 +12,8 @@ interface Props {
     image?: string
     name: string
     description: string
+    /** 项目状态小字(如「开发中 · 暂未开源」);无链接的项目用它交代去向 */
+    status?: string
     links: {
       type: string
       href: string
@@ -67,33 +69,48 @@ const projectIconSet: Record<string, iconsType> = {
                 imagePath && 'me-20'
               )}
             >
-              <a
-                class='project-title font-medium text-foreground no-underline transition-colors'
-                href={project.links[0].href}
-                target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
-                rel={/^https?:\/\//.test(project.links[0].href) ? 'noopener noreferrer' : undefined}
-              >
-                {project.name}
-              </a>
+              <div class='flex items-baseline gap-x-2.5'>
+                {
+                  project.links.length > 0 ? (
+                    <a
+                      class='project-title font-medium text-foreground no-underline transition-colors'
+                      href={project.links[0].href}
+                      target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
+                      rel={
+                        /^https?:\/\//.test(project.links[0].href) ? 'noopener noreferrer' : undefined
+                      }
+                    >
+                      {project.name}
+                    </a>
+                  ) : (
+                    <span class='project-title font-medium text-foreground'>{project.name}</span>
+                  )
+                }
+                {project.status && <span class='project-status'>{project.status}</span>}
+              </div>
               <div class='project-description leading-snug text-muted-foreground sm:h-12'>
                 {project.description}
               </div>
-              <div class='flex flex-row items-center gap-x-2 sm:gap-x-3'>
-                {project.links.map((link) => {
-                  const icon = projectIconSet[link.type]
-                  return (
-                    <a
-                      href={link.href}
-                      class='rounded-full bg-muted p-1 text-muted-foreground transition-colors sm:p-1.5'
-                      aria-label={`${project.name} · ${link.type}`}
-                      target={/^https?:\/\//.test(link.href) ? '_blank' : undefined}
-                      rel={/^https?:\/\//.test(link.href) ? 'noopener noreferrer' : undefined}
-                    >
-                      <Icon class='size-5' name={icon} />
-                    </a>
-                  )
-                })}
-              </div>
+              {
+                project.links.length > 0 && (
+                  <div class='flex flex-row items-center gap-x-2 sm:gap-x-3'>
+                    {project.links.map((link) => {
+                      const icon = projectIconSet[link.type]
+                      return (
+                        <a
+                          href={link.href}
+                          class='rounded-full bg-muted p-1 text-muted-foreground transition-colors sm:p-1.5'
+                          aria-label={`${project.name} · ${link.type}`}
+                          target={/^https?:\/\//.test(link.href) ? '_blank' : undefined}
+                          rel={/^https?:\/\//.test(link.href) ? 'noopener noreferrer' : undefined}
+                        >
+                          <Icon class='size-5' name={icon} />
+                        </a>
+                      )
+                    })}
+                  </div>
+                )
+              }
             </div>
           </div>
         )
@@ -111,6 +128,14 @@ const projectIconSet: Record<string, iconsType> = {
     overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-word;
+  }
+  /* 状态小字:等宽+主题色,不加底色(全站透明纪律) */
+  .project-status {
+    flex-shrink: 0;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
   }
   .project-description {
     display: -webkit-box;

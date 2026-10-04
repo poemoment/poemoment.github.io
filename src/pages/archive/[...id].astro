@@ -61,7 +61,7 @@ const meta = {
           <>
             {tags.map((tag) => (
               <a
-                href={`/archive/tags/${tag}`}
+                href={`/archive/tags/${tag}/`}
                 class='rounded-md border border-border px-2 py-1 transition hover:border-foreground/20'
               >
                 {tag}
@@ -76,7 +76,7 @@ const meta = {
 
     {description && <p class='text-lg text-muted-foreground'>{description}</p>}
 
-    <PageInfo class='mt-2 italic' path={`/archive/${entry.id}`} />
+    <PageInfo class='mt-2 italic' path={`/archive/${entry.id}/`} />
 
     <div class='mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground'>
       <div class='flex items-center gap-2'>
@@ -96,7 +96,7 @@ const meta = {
           <div class='flex items-center gap-2'>
             <Icon name='calendar' />
             <span>
-              Updated{' '}
+              更新于{' '}
               {updatedDate.toLocaleDateString('zh-CN', {
                 year: 'numeric',
                 month: 'long',
@@ -142,7 +142,7 @@ const meta = {
               {relatedBlogPosts.map((post) => (
                 <li>
                   <a
-                    href={`/blog/${post.id}`}
+                    href={`/blog/${post.id}/`}
                     class='block rounded-lg border border-border bg-card p-3 transition hover:border-foreground/20'
                     data-astro-prefetch
                   >
@@ -167,7 +167,7 @@ const meta = {
               {relatedArchiveEntries.map((arch) => (
                 <li>
                   <a
-                    href={`/archive/${arch.id}`}
+                    href={`/archive/${arch.id}/`}
                     class='block rounded-lg border border-border bg-card p-3 transition hover:border-foreground/20'
                     data-astro-prefetch
                   >
@@ -190,7 +190,7 @@ const meta = {
       <div class='text-sm text-muted-foreground'>
         <p class='text-xs'>Content may be incomplete or work-in-progress.</p>
       </div>
-      <Button title='← Back' href='/archive' style='back' />
+      <Button title='← Back' href='/archive/' style='back' />
     </div>
   </div>
 </PageLayout>

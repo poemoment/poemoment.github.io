@@ -5,6 +5,7 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
+  { depth: 2, slug: 'building', text: '进行中的项目' },
   { depth: 2, slug: 'featured', text: '公开项目' },
   { depth: 2, slug: 'experiments', text: '站内探索' },
   { depth: 2, slug: 'credits', text: '开源基础' }
@@ -12,7 +13,31 @@ const headings = [
 ---
 
 <PageLayout title='项目' {headings}>
-  <p>这里记录已经公开的作品，以及博客中可以直接体验的功能。</p>
+  <p>这里记录我在做的东西：正在开发中的、已经公开的，以及博客中可以直接体验的功能。</p>
+
+  <h2 id='building'>进行中的项目</h2>
+  <p class='text-sm text-muted-foreground'>
+    两个项目都在本机日常使用中，由我和 AI 结对开发——我出想法与验收方向，实现与测试由 coding agent
+    完成。源码还在整理，尚未公开。
+  </p>
+  <ProjectSection
+    project={[
+      {
+        name: 'personal-assistant · 个人助理',
+        status: '开发中 · 暂未开源',
+        description:
+          '会成长的本地个人助理桌面应用:日程提取、今日计划、多端提醒、学习与阅读跟进。FastAPI + Tauri,557 个测试。',
+        links: []
+      },
+      {
+        name: 'dsh-memory · 跨 Agent 记忆',
+        status: '开发中 · 暂未开源',
+        description:
+          '给 dsh / Codex / ZCode 等 MCP 宿主装上的长期记忆:写入门卫、证据强制、纠错链,检索全程 0 token。156 项测试。',
+        links: []
+      }
+    ]}
+  />
 
   <h2 id='featured'>公开项目</h2>
   <ProjectSection
@@ -34,12 +59,12 @@ const headings = [
       {
         name: '站内终端',
         description: '用目录与命令探索博客内容，支持搜索、阅读与主题切换。',
-        links: [{ type: 'site', href: '/terminal' }]
+        links: [{ type: 'site', href: '/terminal/' }]
       },
       {
         name: 'Agent 资料收藏',
         description: '筛选值得阅读的课程、工程实践与开源仓库，附上收录理由。',
-        links: [{ type: 'doc', href: '/curated' }]
+        links: [{ type: 'doc', href: '/curated/' }]
       }
     ]}
   />

@@ -27,7 +27,9 @@ export default defineConfig({
   // Top-Level Options
   site: 'https://poemoment.github.io',
   // base: '/docs',
-  trailingSlash: 'never',
+  // GitHub Pages 以目录形式托管(/blog/ → /blog/index.html),
+  // 'always' 让构建产物与 canonical 链接同形,避免 /blog → /blog/ 的 301 分裂
+  trailingSlash: 'always',
 
   // Adapter —— 纯静态站(GitHub Pages 部署)
   // 若日后要回到 Vercel SSR:恢复 `import vercel from '@astrojs/vercel'` 并取消下面两行注释

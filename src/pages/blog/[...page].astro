@@ -67,7 +67,7 @@ const paginationProps = {
               <span class='text-muted-foreground'>
                 第 {page.currentPage} 页 · 当前显示 {page.data.length} 篇，共 {collectionsCount} 篇
               </span>
-              <a aria-label='View all blog by years' href='/archives' data-astro-prefetch>
+              <a aria-label='View all blog by years' href='/archives/' data-astro-prefetch>
                 按年份归档 →
               </a>
             </div>
@@ -105,7 +105,7 @@ const paginationProps = {
                           <span aria-hidden='true' class='shrink-0 text-border'>
                             /
                           </span>
-                          <span>{minutes} min</span>
+                          <span>{minutes} 分钟</span>
                         </>
                       )}
                       {post.data.tags[0] && (
@@ -119,7 +119,7 @@ const paginationProps = {
                     </div>
                     <div class='min-w-0'>
                       <a
-                        href={`/blog/${post.id}`}
+                        href={`/blog/${post.id}/`}
                         class='block min-w-0 text-base font-medium leading-6 hover:text-primary sm:text-lg'
                         data-astro-prefetch
                       >
@@ -148,12 +148,12 @@ const paginationProps = {
               <ul class='text-bgColor flex flex-wrap gap-2'>
                 {uniqueTags.map((tag) => (
                   <li>
-                    <Button title={tag} href={`/tags/${tag}`} style='pill' />
+                    <Button title={tag} href={`/tags/${tag}/`} style='pill' />
                   </li>
                 ))}
               </ul>
               <span class='mt-4 block sm:text-end'>
-                <a aria-label='View all blog categories' href='/tags' data-astro-prefetch>
+                <a aria-label='View all blog categories' href='/tags/' data-astro-prefetch>
                   查看全部 →
                 </a>
               </span>

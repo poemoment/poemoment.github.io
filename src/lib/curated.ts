@@ -62,5 +62,5 @@ export function getCuratedSourceHost(source: string) {
 
 export function getCuratedDigestHref(item: CuratedEntry) {
   const relatedArchive = item.data.relatedArchive?.[0]
-  return relatedArchive ? `/archive/${relatedArchive}` : undefined
+  return relatedArchive ? `/archive/${relatedArchive}/` : undefined
 }

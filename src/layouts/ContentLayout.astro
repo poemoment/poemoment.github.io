@@ -15,10 +15,13 @@ interface Props {
 }
 
 const { meta, highlightColor, back = '/', showProgress = false, ...props } = Astro.props
+
+// 中英站点共用本布局,按路径决定按钮文案
+const isEn = Astro.url.pathname.startsWith('/en')
 ---
 
 <PageLayout {meta} {highlightColor} {...props}>
-  <Button title='Back' href={back} style='back' />
+  <Button title={isEn ? 'Back' : '返回'} href={back} style='back' />
   <main class='mt-6 items-start gap-x-10 md:flex'>
     {/* Sidebar */}
     <aside

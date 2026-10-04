@@ -27,7 +27,7 @@ async function buildSearchDocs(): Promise<SearchDoc[]> {
     collection: 'blog',
     title: entry.data.title,
     description: entry.data.description,
-    url: `/blog/${encodeURI(entry.id)}`,
+    url: `/blog/${encodeURI(entry.id)}/`,
     date: formatDate(entry.data.publishDate),
     tags: entry.data.tags,
     body: normalizeBody((entry as { body?: string }).body ?? '')
@@ -37,7 +37,7 @@ async function buildSearchDocs(): Promise<SearchDoc[]> {
     collection: 'archive',
     title: entry.data.title,
     description: entry.data.description,
-    url: `/archive/${encodeURI(entry.id)}`,
+    url: `/archive/${encodeURI(entry.id)}/`,
     date: formatDate(entry.data.date),
     tags: entry.data.tags,
     body: normalizeBody((entry as { body?: string }).body ?? '')

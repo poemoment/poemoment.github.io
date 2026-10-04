@@ -1,4 +1,5 @@
 ---
+import config from 'virtual:config'
 import { cn } from 'astro-pure/utils'
 
 interface Props {
@@ -11,15 +12,21 @@ const { class: className, path: pathProp, hideComment } = Astro.props as Props
 
 const stripEn = (p: string) => p.replace(/^\/en(?=\/|$)/, '') || '/'
 const path = stripEn(pathProp ?? Astro.url.pathname)
+
+// waline 关闭时不渲染任何计数文案，避免出现没有数字的 "views | comments" 残片
+const walineConfig = config.integ.waline
+const enabled = walineConfig.enable && !!walineConfig.server
 ---
 
-<div class={cn('text-base text-sm text-muted-foreground', className)}>
-  <span class='waline-pageview-count' data-path={path}></span> views
-  {
-    !hideComment && (
-      <a href='#waline'>
-        | <span class='waline-comment-count' data-path={path} /> comments
-      </a>
-    )
-  }
-</div>
+{
+  enabled && (
+    <div class={cn('text-base text-sm text-muted-foreground', className)}>
+      <span class='waline-pageview-count' data-path={path} /> views
+      {!hideComment && (
+        <a href='#waline'>
+          | <span class='waline-comment-count' data-path={path} /> comments
+        </a>
+      )}
+    </div>
+  )
+}

@@ -22,14 +22,14 @@ const meta = {
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/blog' style='back' />
+  <Button title='返回' href='/blog/' style='back' />
 
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
-      <h1 class='mb-6 text-3xl font-medium'>Archives</h1>
+      <h1 class='mb-6 text-3xl font-medium'>归档</h1>
     </div>
 
-    {allPosts.length === 0 && <p>No posts yet.</p>}
+    {allPosts.length === 0 && <p class='text-muted-foreground'>还没有文章。</p>}
 
     <section id='content' class='animate' aria-label='Blog post list'>
       {

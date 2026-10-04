@@ -39,7 +39,7 @@ export const siteColumnsEn: SiteColumnEn[] = [
     name: 'Research notes',
     definition:
       'Papers, source code, and courses distilled into full articles — the parts I have already thought through.',
-    href: '/en/blog',
+    href: '/en/blog/',
     collection: 'blog',
     unit: 'posts'
   },
@@ -47,7 +47,7 @@ export const siteColumnsEn: SiteColumnEn[] = [
     slug: 'retrospective',
     name: 'Engineering retrospectives',
     definition: 'Decisions, mistakes, and corrections from real projects — things I have actually built.',
-    href: '/en/projects',
+    href: '/en/projects/',
     collection: null,
     unit: ''
   },
@@ -56,7 +56,7 @@ export const siteColumnsEn: SiteColumnEn[] = [
     name: 'Quick notes',
     definition:
       'Judgments and fragments that are not mature yet but worth keeping — the parts I have not thought through but keep an eye on.',
-    href: '/en/archive',
+    href: '/en/archive/',
     collection: 'archive',
     unit: 'entries'
   }
@@ -67,21 +67,21 @@ export const siteColumns: SiteColumn[] = [
     slug: 'research',
     name: '研究笔记',
     definition: '论文、源码与课程的理解整理，写成完整的文章——已经想清楚的部分。',
-    href: '/blog',
+    href: '/blog/',
     collection: 'blog'
   },
   {
     slug: 'retrospective',
     name: '工程复盘',
     definition: '真实项目中的决策、失误与修正——来自亲手做过的东西。',
-    href: '/projects',
+    href: '/projects/',
     collection: null
   },
   {
     slug: 'notes',
     name: '随手记录',
     definition: '尚未成熟但值得保留的判断与片段——还没想清楚、但值得盯着的部分。',
-    href: '/archive',
+    href: '/archive/',
     collection: 'archive'
   }
 ]

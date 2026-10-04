@@ -5,6 +5,7 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 
 const headings = [
+  { depth: 2, slug: 'building', text: 'In development' },
   { depth: 2, slug: 'featured', text: 'Public projects' },
   { depth: 2, slug: 'experiments', text: 'Explore this site' },
   { depth: 2, slug: 'credits', text: 'Open-source foundation' }
@@ -12,7 +13,32 @@ const headings = [
 ---
 
 <PageLayout title='Projects' {headings}>
-  <p>Public work and features you can try directly on this blog.</p>
+  <p>Things I am building, public work, and features you can try directly on this blog.</p>
+
+  <h2 id='building'>In development</h2>
+  <p class='text-sm text-muted-foreground'>
+    Both projects run on my own machine every day and are built pair-programming with AI — I set the
+    direction and acceptance criteria, coding agents do the implementation and tests. Source not
+    public yet.
+  </p>
+  <ProjectSection
+    project={[
+      {
+        name: 'personal-assistant',
+        status: 'In development · not open-sourced',
+        description:
+          'A local personal assistant desktop app that grows with you: schedules, plans, reminders, learning and reading. FastAPI + Tauri, 557 tests.',
+        links: []
+      },
+      {
+        name: 'dsh-memory',
+        status: 'In development · not open-sourced',
+        description:
+          'A long-term memory MCP server for any agent host: write gate, enforced evidence, correction chains, zero-token retrieval. 156 tests.',
+        links: []
+      }
+    ]}
+  />
 
   <h2 id='featured'>Public projects</h2>
   <ProjectSection
@@ -36,13 +62,13 @@ const headings = [
         name: 'Site terminal',
         description:
           'Explore the blog through directories and commands, including search, reading, and theme switching.',
-        links: [{ type: 'site', href: '/terminal' }]
+        links: [{ type: 'site', href: '/terminal/' }]
       },
       {
         name: 'Agent resource collection',
         description:
           'Selected courses, engineering articles, and repositories, each with a reason to read it.',
-        links: [{ type: 'doc', href: '/en/curated' }]
+        links: [{ type: 'doc', href: '/en/curated/' }]
       }
     ]}
   />

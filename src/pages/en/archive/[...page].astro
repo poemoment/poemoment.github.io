@@ -100,7 +100,7 @@ const typeColors: Record<string, string> = {
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/en' style='back' />
+  <Button title='Back' href='/en/' style='back' />
 
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
@@ -141,7 +141,7 @@ const typeColors: Record<string, string> = {
               {page.data.map((entry) => (
                 <li>
                   <a
-                    href={`/en/archive/${entry.data.translationKey}`}
+                    href={`/en/archive/${entry.data.translationKey}/`}
                     class='group block rounded-xl border border-border bg-card px-5 py-5 transition hover:border-foreground/20 hover:shadow-sm'
                     data-astro-prefetch
                   >
@@ -219,7 +219,7 @@ const typeColors: Record<string, string> = {
                     Tags
                   </h2>
                   <a
-                    href='/archive/tags'
+                    href='/archive/tags/'
                     class='text-xs text-muted-foreground hover:text-foreground'
                   >
                     View all →
@@ -229,7 +229,7 @@ const typeColors: Record<string, string> = {
                   {uniqueTags.map((tag) => (
                     <li>
                       <a
-                        href={`/archive/tags/${tag}`}
+                        href={`/archive/tags/${tag}/`}
                         class='inline-flex rounded-md border border-border px-2 py-1 text-xs transition hover:border-foreground/20'
                       >
                         {tag}

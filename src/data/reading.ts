@@ -38,7 +38,7 @@ export const readingTopics: ReadingTopic[] = [
     source: 'deepseek-ai/deepseek-harness（本地克隆）+《手撕 Claude Code 源码》精读稿',
     stage: '阅读',
     updated: '2026-09-09',
-    href: '/curated'
+    href: '/curated/'
   },
   {
     title: 'Pi / Tau：真实 Agent Loop 的源码走读',

@@ -15,6 +15,11 @@ const {
   data: { title, publishDate },
   class: className
 } = Astro.props
+
+const isEn = Astro.url.pathname.startsWith('/en')
+const labels = isEn
+  ? { author: 'Author', publishedAt: 'Published at', copyright: 'Copyright' }
+  : { author: '作者', publishedAt: '发布于', copyright: '版权' }
 ---
 
 <div
@@ -34,13 +39,13 @@ const {
   {/* common info */}
   <div class='flex flex-row flex-wrap justify-start gap-x-5 gap-y-1 sm:gap-x-8'>
     <div class='flex gap-x-2 sm:flex-col'>
-      <span>Author</span>
+      <span>{labels.author}</span>
       <span class='text-sm text-foreground max-sm:place-self-center'>{config.author}</span>
     </div>
     {
       publishDate && (
         <div class='flex gap-x-2 sm:min-w-16 sm:flex-col'>
-          <span>Published at</span>
+          <span>{labels.publishedAt}</span>
           <span class='text-sm text-foreground max-sm:place-self-center'>
             {getFormattedDate(publishDate, {
               month: 'long'
@@ -50,7 +55,7 @@ const {
       )
     }
     <div class='flex gap-x-2 sm:flex-col'>
-      <span>Copyright</span>
+      <span>{labels.copyright}</span>
       <a
         class='text-sm text-foreground max-sm:place-self-center'
         href='https://creativecommons.org/licenses/by-nc-sa/4.0/'
@@ -104,7 +109,9 @@ const {
   copyLink?.addEventListener('click', () => {
     navigator.clipboard.writeText(window.location.href)
     // Show toast
-    showToast({ message: 'Link copied!' })
+    showToast({
+      message: location.pathname.startsWith('/en') ? 'Link copied!' : '链接已复制'
+    })
   })
 
   // QRCode

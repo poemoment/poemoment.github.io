@@ -51,8 +51,8 @@ const curatedEntries = (await getCollection('curated', ({ data }) => !data.draft
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 )
 
-const postHref = (id: string) => (useEnPosts ? `/en/blog/${id}` : `/blog/${id}`)
-const archiveHref = (id: string) => (useEnArchive ? `/en/archive/${id}` : `/archive/${id}`)
+const postHref = (id: string) => (useEnPosts ? `/en/blog/${id}/` : `/blog/${id}/`)
+const archiveHref = (id: string) => (useEnArchive ? `/en/archive/${id}/` : `/archive/${id}/`)
 
 // 栏目索引：条目数与最新条目来自真实集合；blog/archive 在英文站回退中文集合时仍按真实数据计
 const columnLatest: Record<
@@ -76,7 +76,7 @@ const columnLatest: Record<
     latest:
       curatedEntries[0] && {
         title: curatedEntries[0].data.title,
-        href: `/curated/${curatedEntries[0].id}`
+        href: `/curated/${curatedEntries[0].id}/`
       }
   }
 }
@@ -139,7 +139,7 @@ const formatDate = (date: Date) =>
       <div class='posts-col' id='content'>
         <div class='col-heading'>
           <h2>Recent posts</h2>
-          <a href='/en/blog' class='col-more'>All {allPosts.length} posts</a>
+          <a href='/en/blog/' class='col-more'>All {allPosts.length} posts</a>
         </div>
         {
           posts.length ? (
@@ -190,8 +190,8 @@ const formatDate = (date: Date) =>
             <div class='empty-state'>
               <p>No public posts yet. The first one will appear here.</p>
               <p class='empty-alt'>
-                Meanwhile you can browse <a href='/en/archive'>notes</a> and{' '}
-                <a href='/en/curated'>curated</a>.
+                Meanwhile you can browse <a href='/en/archive/'>notes</a> and{' '}
+                <a href='/en/curated/'>curated</a>.
               </p>
             </div>
           )

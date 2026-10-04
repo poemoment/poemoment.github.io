@@ -43,19 +43,19 @@ const columnLatest: Record<
   blog: {
     count: allPosts.length,
     unit: '篇',
-    latest: allPosts[0] && { title: allPosts[0].data.title, href: `/blog/${allPosts[0].id}` }
+    latest: allPosts[0] && { title: allPosts[0].data.title, href: `/blog/${allPosts[0].id}/` }
   },
   archive: {
     count: archiveEntries.length,
     unit: '条',
     latest:
-      archiveEntries[0] && { title: archiveEntries[0].data.title, href: `/archive/${archiveEntries[0].id}` }
+      archiveEntries[0] && { title: archiveEntries[0].data.title, href: `/archive/${archiveEntries[0].id}/` }
   },
   curated: {
     count: curatedEntries.length,
     unit: '条',
     latest:
-      curatedEntries[0] && { title: curatedEntries[0].data.title, href: `/curated/${curatedEntries[0].id}` }
+      curatedEntries[0] && { title: curatedEntries[0].data.title, href: `/curated/${curatedEntries[0].id}/` }
   }
 }
 
@@ -111,7 +111,13 @@ const formatDate = (date: Date) =>
       <div class='posts-col' id='content'>
         <div class='col-heading'>
           <h2>最近文章</h2>
-          <a href='/blog' class='col-more'>全部 {allPosts.length} 篇</a>
+          {
+            allPosts.length > 0 && (
+              <a href='/blog/' class='col-more'>
+                全部 {allPosts.length} 篇
+              </a>
+            )
+          }
         </div>
         {
           posts.length ? (
@@ -120,7 +126,7 @@ const formatDate = (date: Date) =>
                 <li>
                   <a
                     class='post-row'
-                    href={`/blog/${post.id}`}
+                    href={`/blog/${post.id}/`}
                     data-post-row={post.id}
                     data-published={post.data.publishDate.toISOString()}
                   >
@@ -148,7 +154,7 @@ const formatDate = (date: Date) =>
                         {minutes !== null && (
                           <>
                             <span class='meta-sep'>·</span>
-                            <span>{minutes} min</span>
+                            <span>{minutes} 分钟</span>
                           </>
                         )}
                         <span class='meta-sep'>·</span>
@@ -163,7 +169,7 @@ const formatDate = (date: Date) =>
             <div class='empty-state'>
               <p>还没有公开文章。第一篇写完就会出现在这里。</p>
               <p class='empty-alt'>
-                现在可以先看<a href='/archive'>随记</a>与<a href='/curated'>收藏</a>。
+                现在可以先看<a href='/archive/'>随记</a>与<a href='/curated/'>收藏</a>。
               </p>
             </div>
           )
@@ -216,7 +222,8 @@ const formatDate = (date: Date) =>
               <li class='column-row'>
                 <div class='column-name'>
                   <h3>{column.name}</h3>
-                  {meta?.count !== undefined && (
+                  {/* 0 条时不显示计数:不拿「空」当门面 */}
+                  {meta?.count !== undefined && meta.count > 0 && (
                     <span class='column-count'>
                       {meta.count} {meta.unit}
                     </span>

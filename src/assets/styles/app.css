@@ -144,6 +144,23 @@ a {
   opacity: 0.5;
 }
 
+/* 浅色可读性薄纱:照片右置,而三栏布局的文字列(尤其首页右栏)会压到照片亮部,
+   用向右渐强的米色渐变把文字落点处再压一层,左缘保持干净 */
+.page-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    hsl(var(--background) / 0) 40%,
+    hsl(var(--background) / 0.34) 72%,
+    hsl(var(--background) / 0.52) 100%
+  );
+}
+html.dark .page-bg::after {
+  content: none;
+}
+
 /* 深色:图库星空组,即当背景本身 */
 html.dark .page-bg {
   opacity: 1;

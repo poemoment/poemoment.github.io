@@ -28,35 +28,35 @@ export const theme: ThemeUserConfig = {
   customCss: [],
   header: {
     menu: [
-      { title: '文章', link: '/blog' },
-      { title: '随记', link: '/archive' },
-      { title: '收藏', link: '/curated' },
-      { title: '项目', link: '/projects' },
-      { title: '关于', link: '/about' }
+      { title: '文章', link: '/blog/' },
+      { title: '随记', link: '/archive/' },
+      { title: '收藏', link: '/curated/' },
+      { title: '项目', link: '/projects/' },
+      { title: '关于', link: '/about/' }
     ]
   },
   footer: {
     links: [
-      { title: '联系', link: '/contact', pos: 1 },
+      { title: '联系', link: '/contact/', pos: 1 },
       // 视觉菜单 ③：页脚迷你导航（学自 rauno.me）——次级页面入口收在页脚，不占主导航
       {
         title: '更新日志',
-        link: '/changelog',
+        link: '/changelog/',
         pos: 1
       },
       {
         title: '书单',
-        link: '/library',
+        link: '/library/',
         pos: 1
       },
       {
         title: '站内终端',
-        link: '/terminal',
+        link: '/terminal/',
         pos: 1
       },
       {
         title: 'Site Policy',
-        link: '/terms/list',
+        link: '/terms/list/',
         pos: 2
       }
     ],
@@ -126,19 +126,19 @@ export const terms: CardListData = {
   list: [
     {
       title: 'Privacy Policy',
-      link: '/terms/privacy-policy'
+      link: '/terms/privacy-policy/'
     },
     {
       title: 'Terms and Conditions',
-      link: '/terms/terms-and-conditions'
+      link: '/terms/terms-and-conditions/'
     },
     {
       title: 'Copyright',
-      link: '/terms/copyright'
+      link: '/terms/copyright/'
     },
     {
       title: 'Disclaimer',
-      link: '/terms/disclaimer'
+      link: '/terms/disclaimer/'
     }
   ]
 }
