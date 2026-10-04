@@ -35,7 +35,7 @@ const searchHref = localizedPath('/search', lang)
 ---
 
 <header-component
-  class='group sticky top-4 z-[70] mb-12 flex items-center justify-between rounded-2xl border max-sm:py-1'
+  class='group sticky top-4 z-[70] mb-12 flex items-center justify-between rounded-2xl border border-transparent max-sm:py-1'
 >
   <a
     class='brand z-30 text-xl font-semibold group-[.not-top]:ms-2 sm:group-[.not-top]:ms-3'
@@ -180,9 +180,8 @@ const searchHref = localizedPath('/search', lang)
 
 <style>
   header-component {
-    /* 框常显 + 纯色底:浅色米白 / 深色深蓝黑,保证导航文字在背景图上可读 */
-    border-color: hsl(var(--border));
-    background-color: hsl(var(--card));
+    /* 学 joye:页首无框,导航只是几行浮在背景上的文字;
+       滚动后(.not-top)才收成有框纯色底的药丸,深翻页自动隐藏、回翻召回 */
     transition:
       padding 0.3s,
       transform 0.3s,
@@ -194,10 +193,15 @@ const searchHref = localizedPath('/search', lang)
       --un-border-opacity: 1;
       border-color: hsl(var(--border) / var(--un-border-opacity));
       --un-bg-opacity: 1;
+      /* 实底 bg-card:背景是照片,滚动态导航文字必须有衬底 */
       background-color: hsl(var(--card) / var(--un-bg-opacity));
       padding-left: 0.375rem;
       padding-right: 0.375rem;
-      box-shadow: none;
+      box-shadow:
+        rgb(255, 255, 255) 0px 0px 0px 0px,
+        rgba(24, 24, 27, 0.08) 0px 0px 0px 1px,
+        rgba(39, 39, 42, 0.08) 0px 10px 15px -3px,
+        rgba(39, 39, 42, 0.08) 0px 4px 6px -4px;
     }
     &[data-show='false']:not(.expanded) {
       transform: translateY(-5rem);

@@ -186,7 +186,13 @@ const formatDate = (date: Date) =>
               {readingTopics.map((topic) => (
                 <li>
                   {topic.href ? (
-                    <a class='reading-item' href={topic.href}>
+                    <a
+                      class='reading-item'
+                      href={topic.href}
+                      {...(/^https?:\/\//.test(topic.href)
+                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        : {})}
+                    >
                       <span class='reading-title'>{topic.title}</span>
                       <span class='reading-meta'>
                         <span class='reading-stage'>{topic.stage}</span>
@@ -325,7 +331,7 @@ const formatDate = (date: Date) =>
     margin: 0 0 1rem;
     color: hsl(var(--muted-foreground));
     font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
   }
 
@@ -348,7 +354,7 @@ const formatDate = (date: Date) =>
   .col-more {
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     white-space: nowrap;
   }
 
@@ -358,7 +364,7 @@ const formatDate = (date: Date) =>
 
   /* 左栏：当前状态 */
   .status-col {
-    font-size: 0.88rem;
+    font-size: 0.98rem;
     line-height: 1.7;
   }
 
@@ -370,7 +376,7 @@ const formatDate = (date: Date) =>
     display: block;
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0.08em;
   }
 
@@ -386,7 +392,7 @@ const formatDate = (date: Date) =>
   .status-value time,
   .status-value a {
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: 0.9rem;
   }
 
   /* 中栏：文章行是视觉主角 */
@@ -405,7 +411,7 @@ const formatDate = (date: Date) =>
   .post-main h3 {
     margin: 0;
     font-family: var(--font-serif);
-    font-size: 1.08rem;
+    font-size: 1.18rem;
     font-weight: 650;
     line-height: 1.45;
     transition: color 0.2s ease;
@@ -431,7 +437,7 @@ const formatDate = (date: Date) =>
     margin: 0.35rem 0 0;
     overflow: hidden;
     color: hsl(var(--muted-foreground));
-    font-size: 0.86rem;
+    font-size: 0.95rem;
     line-height: 1.65;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -445,7 +451,7 @@ const formatDate = (date: Date) =>
     margin: 0.5rem 0 0;
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     white-space: nowrap;
   }
 
@@ -486,7 +492,7 @@ const formatDate = (date: Date) =>
   }
 
   .empty-alt {
-    font-size: 0.88rem;
+    font-size: 0.98rem;
   }
 
   .empty-alt a {
@@ -517,7 +523,7 @@ const formatDate = (date: Date) =>
 
   .reading-title {
     display: block;
-    font-size: 0.92rem;
+    font-size: 1.02rem;
     font-weight: 600;
     line-height: 1.6;
     transition: color 0.2s ease;
@@ -533,7 +539,7 @@ const formatDate = (date: Date) =>
     margin-top: 0.35rem;
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
   }
 
   .reading-stage {
@@ -543,7 +549,7 @@ const formatDate = (date: Date) =>
   .reading-source {
     margin: 0.35rem 0 0;
     color: hsl(var(--muted-foreground));
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     line-height: 1.6;
   }
 
@@ -584,7 +590,7 @@ const formatDate = (date: Date) =>
   .column-count {
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
   }
 
   .column-definition {
@@ -596,7 +602,7 @@ const formatDate = (date: Date) =>
   .column-latest {
     display: inline-block;
     margin-top: 0.4rem;
-    font-size: 0.86rem;
+    font-size: 0.95rem;
   }
 
   .column-latest:hover {
@@ -607,7 +613,7 @@ const formatDate = (date: Date) =>
     align-self: center;
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     white-space: nowrap;
   }
 
@@ -663,7 +669,7 @@ const formatDate = (date: Date) =>
     }
 
     .post-main h3 {
-      font-size: 1.02rem;
+      font-size: 1.1rem;
     }
 
     .column-row {

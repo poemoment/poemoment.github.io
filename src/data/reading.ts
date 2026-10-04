@@ -22,6 +22,13 @@ export interface ReadingTopic {
 
 export const readingTopics: ReadingTopic[] = [
   {
+    title: 'Anthropic 工程博客 · Agent 系列',
+    source: 'Building Effective Agents 及其后续系列的总入口',
+    stage: '阅读',
+    updated: '2026-10-04',
+    href: 'https://www.anthropic.com/engineering'
+  },
+  {
     title: 'Agent 概念地图：Harness、上下文工程与评估',
     source: '《深入理解 AI Agent》',
     stage: '整理',
