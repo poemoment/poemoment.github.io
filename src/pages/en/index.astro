@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content'
 
 import CgBackdrop from '@/components/home/CgBackdrop.astro'
+import ThoughtOrbit from '@/components/home/ThoughtOrbit.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import { siteColumnsEn } from '@/data/columns'
 import { hasReadingTopics, readingTopics } from '@/data/reading'
@@ -105,8 +106,8 @@ const formatDate = (date: Date) =>
 <PageLayout meta={{ title: 'Home' }}>
   <main class='home-shell' id='content-header'>
     {/* First screen: 3 / 6 / 3 — status · recent posts · now understanding */}
-    <section class='first-screen animate' aria-label='Recent posts and current status'>
-      <aside class='status-col' aria-label='Current status'>
+    <section class='first-screen' aria-label='Recent posts and current status'>
+      <aside class='status-col' aria-label='Current status' data-motion-reveal>
         <h2 class='col-title'>Status</h2>
         {
           recentActivity && (
@@ -136,7 +137,7 @@ const formatDate = (date: Date) =>
         </p>
       </aside>
 
-      <div class='posts-col' id='content'>
+      <div class='posts-col' id='content' data-motion-reveal>
         <div class='col-heading'>
           <h2>Recent posts</h2>
           <a href='/en/blog/' class='col-more'>All {allPosts.length} posts</a>
@@ -193,6 +194,7 @@ const formatDate = (date: Date) =>
                 Meanwhile you can browse <a href='/en/archive/'>notes</a> and{' '}
                 <a href='/en/curated/'>curated</a>.
               </p>
+              <ThoughtOrbit lang='en' />
             </div>
           )
         }
@@ -211,7 +213,7 @@ const formatDate = (date: Date) =>
             </div>
             <ul class='reading-list'>
               {readingTopics.map((topic) => (
-                <li>
+                <li data-motion-reveal>
                   {topic.href ? (
                     <a
                       class='reading-item'
@@ -249,14 +251,14 @@ const formatDate = (date: Date) =>
     </section>
 
     {/* Second screen: section index (rows, not cards) */}
-    <section class='column-index animate' aria-label='Section index'>
+    <section class='column-index' aria-label='Section index'>
       <h2 class='col-title'>Sections</h2>
       <ul class='column-list'>
         {
           siteColumnsEn.map((column) => {
             const meta = column.collection ? columnLatest[column.collection] : undefined
             return (
-              <li class='column-row'>
+              <li class='column-row motion-row' data-motion-reveal>
                 <div class='column-name'>
                   <h3>{column.name}</h3>
                   {meta?.count !== undefined && (

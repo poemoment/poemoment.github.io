@@ -1,0 +1,205 @@
+---
+import type { Lang } from '@/i18n/ui'
+
+const { lang = 'zh' } = Astro.props as { lang?: Lang }
+const english = lang === 'en'
+const prefix = english ? '/en' : ''
+const nodes = [
+  {
+    label: english ? 'Notes' : '随记',
+    href: `${prefix}/archive/`,
+    position: 'notes',
+    number: '01'
+  },
+  {
+    label: english ? 'Curated' : '收藏',
+    href: `${prefix}/curated/`,
+    position: 'curated',
+    number: '02'
+  },
+  {
+    label: english ? 'Projects' : '项目',
+    href: `${prefix}/projects/`,
+    position: 'projects',
+    number: '03'
+  }
+]
+---
+
+<nav
+  class='thought-orbit'
+  data-motion-surface
+  aria-label={english ? 'Explore the notebook' : '探索思考笔记'}
+>
+  <div class='orbit-caption'>
+    <span>{english ? 'A NOTEBOOK IN ORBIT' : '记录 · 连接 · 理解'}</span>
+    <button type='button' data-motion-toggle aria-pressed='false' hidden>
+      <svg width='14' height='14' viewBox='0 0 16 16' fill='none' aria-hidden='true'>
+        <path d='M5 3v10M11 3v10' stroke='currentColor' stroke-width='1.5'></path>
+      </svg>
+    </button>
+  </div>
+  <div class='orbit-scene'>
+    <svg class='orbit-drawing' viewBox='0 0 400 280' fill='none' aria-hidden='true'>
+      <ellipse cx='200' cy='140' rx='167' ry='100' class='orbit-line'></ellipse>
+      <ellipse
+        cx='200'
+        cy='140'
+        rx='120'
+        ry='68'
+        transform='rotate(-32 200 140)'
+        class='orbit-line orbit-dashed'></ellipse>
+      <path d='M200 28v12m0 200v12M21 140h12m334 0h12' class='orbit-line'></path>
+      <g class='orbit-satellite'>
+        <circle cx='200' cy='140' r='78' class='orbit-line'></circle>
+        <circle cx='200' cy='62' r='4' fill='currentColor'></circle>
+        <circle cx='200' cy='62' r='9' class='orbit-line'></circle>
+      </g>
+      <circle cx='200' cy='140' r='43' class='orbit-core'></circle>
+    </svg>
+    <span class='orbit-monogram' aria-hidden='true'>p<span>.</span></span>
+    {
+      nodes.map((node) => (
+        <a href={node.href} class={`orbit-node orbit-node-${node.position}`}>
+          <span class='orbit-node-number' aria-hidden='true'>
+            {node.number}
+          </span>
+          <>
+            <span>{node.label}</span>
+            <span class='orbit-arrow' aria-hidden='true'>
+              ↗
+            </span>
+          </>
+        </a>
+      ))
+    }
+  </div>
+  <span class='orbit-footnote'>{english ? 'Follow a thought.' : '沿着一个念头，继续探索。'}</span>
+</nav>
+
+<style>
+  .thought-orbit {
+    margin-top: 2rem;
+    color: hsl(var(--primary));
+  }
+  .orbit-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: hsl(var(--muted-foreground));
+    font: 0.65rem var(--font-mono);
+    letter-spacing: 0.18em;
+  }
+  .orbit-caption button {
+    padding: 0.6rem;
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 50%;
+    color: hsl(var(--primary));
+  }
+  .orbit-scene {
+    position: relative;
+    width: 100%;
+    max-width: 29rem;
+    aspect-ratio: 10 / 7;
+    margin: 0.6rem auto;
+  }
+  .orbit-drawing {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    transition: transform 450ms ease;
+  }
+  .orbit-line {
+    stroke: currentColor;
+    stroke-width: 0.75;
+    opacity: 0.48;
+  }
+  .orbit-dashed {
+    stroke-dasharray: 2 7;
+    opacity: 0.5;
+  }
+  .orbit-core {
+    fill: hsl(var(--background) / 0.6);
+    stroke: currentColor;
+    stroke-opacity: 0.25;
+  }
+  .orbit-satellite {
+    transform-origin: 200px 140px;
+  }
+  :global(html[data-motion='on']) .orbit-satellite {
+    animation: orbit-turn 32s linear infinite;
+  }
+  :global(html[data-motion='on']) .thought-orbit[data-pointer-active] .orbit-drawing {
+    transform: perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  }
+  .orbit-monogram {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -55%);
+    font: italic clamp(2rem, 4vw, 3rem) var(--font-serif);
+    pointer-events: none;
+  }
+  .orbit-monogram span {
+    color: hsl(var(--foreground));
+  }
+  .orbit-node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 3px;
+    background: hsl(var(--background) / 0.94);
+    color: hsl(var(--foreground));
+    font-size: 0.85rem;
+    transition:
+      border-color 180ms,
+      box-shadow 180ms,
+      translate 240ms;
+  }
+  .orbit-node-notes {
+    left: 4%;
+    top: 31%;
+  }
+  .orbit-node-curated {
+    right: 3%;
+    top: 20%;
+  }
+  .orbit-node-projects {
+    right: 17%;
+    bottom: 5%;
+  }
+  .orbit-node-number {
+    color: hsl(var(--muted-foreground));
+    font: 0.6rem var(--font-mono);
+  }
+  .orbit-arrow {
+    color: hsl(var(--primary));
+    transition: transform 240ms;
+  }
+  .orbit-node:is(:hover, :focus-visible) {
+    border-color: hsl(var(--primary) / 0.7);
+    box-shadow: 0 5px 20px hsl(var(--primary) / 0.08);
+  }
+  :global(html[data-motion='on']) .orbit-node:is(:hover, :focus-visible) {
+    translate: 0 -3px;
+  }
+  :global(html[data-motion='on']) .orbit-node:is(:hover, :focus-visible) .orbit-arrow {
+    transform: translate(2px, -2px);
+  }
+  .orbit-footnote {
+    display: block;
+    text-align: center;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+  @keyframes orbit-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

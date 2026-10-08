@@ -1,7 +1,7 @@
 /* Animation */
 @keyframes fade-in-up {
   0% {
-    transform: translateY(2rem);
+    transform: translateY(12px);
     opacity: 0;
   }
   100% {
@@ -10,15 +10,13 @@
   }
 }
 .animate {
-  opacity: 0;
-  animation: 300ms fade-in-up;
-  animation-fill-mode: forwards;
+  animation: 500ms cubic-bezier(.2, .7, .2, 1) fade-in-up backwards;
 }
-@media (prefers-reduced-motion) {
+@media (prefers-reduced-motion: reduce) {
   .animate {
-    opacity: 0;
-    animation: 100ms fade-in-up;
-    animation-fill-mode: forwards;
+    opacity: 1;
+    animation: none;
+    transform: none;
   }
 }
 #content-header {

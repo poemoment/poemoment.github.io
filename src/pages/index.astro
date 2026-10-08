@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content'
 
 import PageLayout from '@/layouts/BaseLayout.astro'
 import CgBackdrop from '@/components/home/CgBackdrop.astro'
+import ThoughtOrbit from '@/components/home/ThoughtOrbit.astro'
 import { siteColumns } from '@/data/columns'
 import { hasReadingTopics, readingTopics } from '@/data/reading'
 
@@ -77,8 +78,8 @@ const formatDate = (date: Date) =>
 <PageLayout meta={{ title: '首页' }}>
   <main class='home-shell' id='content-header'>
     {/* 首屏：3 / 6 / 3 —— 当前状态 · 最近文章 · 正在理解 */}
-    <section class='first-screen animate' aria-label='最近文章与当前状态'>
-      <aside class='status-col' aria-label='当前状态'>
+    <section class='first-screen' aria-label='最近文章与当前状态'>
+      <aside class='status-col' aria-label='当前状态' data-motion-reveal>
         <h2 class='col-title'>状态</h2>
         {
           recentActivity && (
@@ -108,7 +109,7 @@ const formatDate = (date: Date) =>
         </p>
       </aside>
 
-      <div class='posts-col' id='content'>
+      <div class='posts-col' id='content' data-motion-reveal>
         <div class='col-heading'>
           <h2>最近文章</h2>
           {
@@ -171,6 +172,7 @@ const formatDate = (date: Date) =>
               <p class='empty-alt'>
                 现在可以先看<a href='/archive/'>随记</a>与<a href='/curated/'>收藏</a>。
               </p>
+              <ThoughtOrbit />
             </div>
           )
         }
@@ -184,7 +186,7 @@ const formatDate = (date: Date) =>
             </div>
             <ul class='reading-list'>
               {readingTopics.map((topic) => (
-                <li>
+                <li data-motion-reveal>
                   {topic.href ? (
                     <a
                       class='reading-item'
@@ -218,14 +220,14 @@ const formatDate = (date: Date) =>
     </section>
 
     {/* 第二屏：栏目索引（不是卡片网格） */}
-    <section class='column-index animate' aria-label='栏目索引'>
+    <section class='column-index' aria-label='栏目索引'>
       <h2 class='col-title'>栏目</h2>
       <ul class='column-list'>
         {
           siteColumns.map((column) => {
             const meta = column.collection ? columnLatest[column.collection] : undefined
             return (
-              <li class='column-row'>
+              <li class='column-row motion-row' data-motion-reveal>
                 <div class='column-name'>
                   <h3>{column.name}</h3>
                   {/* 0 条时不显示计数:不拿「空」当门面 */}
@@ -251,6 +253,7 @@ const formatDate = (date: Date) =>
           })
         }
       </ul>
+    </section>
     {/* 首页底部:CG 原图以渐变融入当前主题 */}
     <CgBackdrop />
   </main>

@@ -1,0 +1,21 @@
+---
+import type { Lang } from '@/i18n/ui'
+
+import '@/assets/styles/motion.css'
+
+const { lang = 'zh' } = Astro.props as { lang?: Lang }
+---
+
+<div class='ambient-light' aria-hidden='true'><span></span><span></span></div>
+<div class='motion-controls'>
+  <button type='button' data-motion-toggle aria-pressed='false' hidden>
+    <span class='motion-indicator' aria-hidden='true'></span>
+    <span data-motion-label>{lang === 'en' ? 'Motion' : '动态效果'}</span>
+  </button>
+</div>
+
+<script>
+  import { initMotion } from '@/lib/motion'
+
+  initMotion()
+</script>

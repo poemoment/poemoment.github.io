@@ -28,6 +28,15 @@ const hreflangAlternates = hasAlt
 ---
 
 <meta charset='utf-8' />
+<script is:inline>
+  try {
+    document.documentElement.dataset.motion =
+      matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      localStorage.getItem('poemoment:motion') === 'off' ? 'off' : 'on'
+  } catch {
+    document.documentElement.dataset.motion = 'off'
+  }
+</script>
 <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
 <meta content='IE=edge' http-equiv='X-UA-Compatible' />
 <title>{siteTitle}</title>

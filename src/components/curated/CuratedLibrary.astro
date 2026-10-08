@@ -31,7 +31,7 @@ const labels = {
     <p class='max-w-2xl text-sm leading-6 text-muted-foreground'>{labels[lang].description}</p>
   </div>
 
-  <section id='content' class='animate mt-8' aria-label={labels[lang].title}>
+  <section id='content' class='mt-8' aria-label={labels[lang].title}>
     <ul class='text-start' data-curated-list>
       {items.map((item) => <CuratedItem item={item} lang={lang} variant='full' />)}
     </ul>

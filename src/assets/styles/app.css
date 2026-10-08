@@ -121,7 +121,7 @@ a {
 /* 浅色:户外摄影组(v4),低透明度压在米色底上,不与正文争注意力 */
 .page-bg[data-page='home'] {
   background-image: url('/backgrounds/final/light/home.webp');
-  opacity: 0.5;
+  opacity: 0.3;
 }
 .page-bg[data-page='post'] {
   background-image: url('/backgrounds/final/light/post.webp');
@@ -159,6 +159,15 @@ a {
 }
 html.dark .page-bg::after {
   content: none;
+}
+
+/* Keep the notebook and its orbit readable over the photographic detail. */
+.page-bg[data-page='home']::after {
+  background: linear-gradient(to right, hsl(var(--background) / 0.1), hsl(var(--background) / 0.4) 50%, hsl(var(--background) / 0.5));
+}
+html.dark .page-bg[data-page='home']::after {
+  content: '';
+  background: linear-gradient(to right, hsl(var(--background) / 0.15), hsl(var(--background) / 0.5) 50%, hsl(var(--background) / 0.4));
 }
 
 /* 深色:图库星空组,即当背景本身 */

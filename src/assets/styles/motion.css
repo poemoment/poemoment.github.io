@@ -1,0 +1,218 @@
+/* One motion vocabulary: quiet ambient light, tactile surfaces, editorial rows. */
+.ambient-light {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+.ambient-light span {
+  position: absolute;
+  width: min(65vw, 800px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0.55;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.12), transparent 68%);
+}
+.ambient-light span:first-child {
+  top: -20%;
+  left: -20%;
+}
+.ambient-light span:last-child {
+  right: -25%;
+  bottom: -30%;
+  background: radial-gradient(circle, hsl(36 55% 65% / 0.12), transparent 68%);
+}
+html.dark .ambient-light span:last-child {
+  background: radial-gradient(circle, hsl(210 60% 50% / 0.13), transparent 68%);
+}
+html[data-motion='on'] .ambient-light span {
+  animation: ambient-drift 22s ease-in-out infinite alternate;
+}
+html[data-motion='on'] .ambient-light span:last-child {
+  animation-delay: -11s;
+  animation-direction: alternate-reverse;
+}
+@keyframes ambient-drift {
+  to {
+    transform: translate3d(12%, 10%, 0) scale(1.12);
+    opacity: 0.85;
+  }
+}
+
+.motion-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 1.5rem;
+}
+.motion-controls button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  color: hsl(var(--muted-foreground));
+  font: 0.7rem var(--font-mono);
+}
+[data-motion-toggle][hidden] {
+  display: none;
+}
+[data-motion-toggle]:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.motion-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+html[data-motion='on'] .motion-indicator {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+html[data-motion='off'] .orbit-caption svg {
+  opacity: 0.45;
+}
+
+.motion-card {
+  isolation: isolate;
+  transition:
+    transform 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+}
+.motion-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    260px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+    hsl(var(--primary) / 0.13),
+    transparent 75%
+  );
+  transition: opacity 240ms;
+}
+html[data-motion='on'] .motion-card[data-pointer-active] {
+  transform: perspective(850px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 10px 25px -18px hsl(var(--primary) / 0.45);
+}
+html[data-motion='on'] .motion-card[data-pointer-active]::after {
+  opacity: 1;
+}
+.motion-card:focus-within {
+  border-color: hsl(var(--primary) / 0.65);
+}
+.motion-card a {
+  position: relative;
+  z-index: 2;
+}
+
+.motion-row {
+  transition:
+    background-color 240ms,
+    border-color 240ms;
+}
+.motion-row:is(:hover, :focus-within) {
+  border-color: hsl(var(--primary) / 0.4);
+  background-color: hsl(var(--primary) / 0.035);
+}
+.motion-row > article,
+.reading-item,
+.column-go {
+  transition: translate 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-motion='on'] .motion-row:hover > article,
+  html[data-motion='on'] a.reading-item:hover {
+    translate: 4px 0;
+  }
+  html[data-motion='on'] .column-row:hover .column-go {
+    translate: 4px 0;
+  }
+}
+.column-go::after {
+  content: ' ↗';
+  display: inline-block;
+  color: hsl(var(--primary));
+}
+#headerExpandContent a[aria-label='Nav menu item'] {
+  position: relative;
+}
+#headerExpandContent a[aria-label='Nav menu item']::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: 0.25rem;
+  height: 1px;
+  background: hsl(var(--primary));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+}
+#headerExpandContent a[aria-label='Nav menu item']:is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
+}
+
+html[data-motion-hidden] .ambient-light span,
+html[data-motion-hidden] .orbit-satellite,
+html[data-motion-hidden] body::before,
+html[data-motion-hidden] body::after {
+  animation-play-state: paused !important;
+}
+html[data-motion='off'] body::before,
+html[data-motion='off'] body::after {
+  animation: none !important;
+}
+html[data-motion='off'] .animate {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+html[data-motion='off']
+  :is(
+    .motion-card,
+    .motion-row > article,
+    .reading-item,
+    .column-go,
+    .orbit-node,
+    .orbit-arrow,
+    .orbit-drawing
+  ),
+html[data-motion='off'] #headerExpandContent a::after {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-light span,
+  .orbit-satellite {
+    animation: none !important;
+  }
+  .motion-card,
+  .orbit-drawing {
+    transform: none !important;
+  }
+  .motion-row > article,
+  .reading-item,
+  .column-go,
+  .orbit-node {
+    translate: none !important;
+  }
+  .orbit-arrow {
+    transform: none !important;
+  }
+  :is(
+    .motion-card,
+    .motion-row > article,
+    .reading-item,
+    .column-go,
+    .orbit-node,
+    .orbit-arrow,
+    .orbit-drawing
+  ),
+  #headerExpandContent a::after {
+    transition: none !important;
+  }
+}

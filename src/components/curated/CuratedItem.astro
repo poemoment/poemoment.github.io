@@ -34,9 +34,10 @@ const recommendation = item.data.why || item.data.description
 
 <li
   data-curated-item
+  data-motion-reveal
   data-type={item.data.type}
   class:list={[
-    'min-w-0 list-none',
+    'motion-row min-w-0 list-none',
     isCompact
       ? 'post-preview group/card rounded-2xl border bg-background transition-colors ease-in-out hover:bg-muted'
       : 'border-b border-border/70 py-4 first:pt-0 last:border-b-0'

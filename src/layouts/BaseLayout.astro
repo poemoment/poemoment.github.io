@@ -5,6 +5,7 @@ import type { SiteMeta } from 'astro-pure/types'
 import BaseHead from '@/components/BaseHead.astro'
 import Header from '@/components/Header.astro'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts.astro'
+import MotionEffects from '@/components/MotionEffects.astro'
 import ThemeProvider from '@/components/ThemeProvider.astro'
 import DevModeHost from '@/components/terminal/DevModeHost'
 import { buildSiteFs } from '@/components/terminal/fs/server'
@@ -78,6 +79,7 @@ const fs = await buildSiteFs()
       <Header lang={lang} />
       <slot />
       <Footer />
+      <MotionEffects {lang} />
     </div>
     <DevModeHost client:only='react' fs={fs} />
     <KeyboardShortcuts />
