@@ -1,18 +1,46 @@
 ---
+import type { Lang } from '@/i18n/ui'
+
 /**
  * 页面底部的 CG 渐变融合图(用户提供的插画)。
  * 用双向渐隐的 mask 让插图从页面背景中浮现、再化回背景,避免生硬拼贴;
  * 深色模式下轻微压暗。首页、搜索页与英文首页共用。
  */
+interface Props {
+  interactive?: boolean
+  lang?: Lang
+}
+const { interactive = false, lang = 'zh' } = Astro.props
 ---
 
-<div class='cg-backdrop' role='presentation' aria-hidden='true'></div>
+<div class='cg-backdrop' data-image-trail={interactive ? '' : undefined} aria-hidden='true'>
+  <div class='cg-scene'></div>
+  {
+    interactive && (
+      <>
+        <div class='image-trail-layer' data-trail-layer />
+        <span class='cg-trail-hint'>
+          {lang === 'en' ? 'Move to collect a little sky' : '移动鼠标，拾起一段晴空'}
+          <span>↗</span>
+        </span>
+      </>
+    )
+  }
+</div>
 
 <style>
   .cg-backdrop {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
     margin-inline: calc(50% - 50vw);
     margin-top: 1rem;
     height: clamp(260px, 32vh, 420px);
+  }
+
+  .cg-scene {
+    position: absolute;
+    inset: 0;
     background-image: url('/backgrounds/final/cg-home.webp');
     background-size: cover;
     background-position: center 55%;
@@ -23,16 +51,35 @@
       black 72%,
       transparent 100%
     );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      black 32%,
-      black 72%,
-      transparent 100%
-    );
+    mask-image: linear-gradient(to bottom, transparent 0%, black 32%, black 72%, transparent 100%);
   }
 
-  :global(html.dark) .cg-backdrop {
+  :global(html.dark) .cg-scene {
     filter: brightness(0.86) saturate(0.96);
+  }
+
+  .image-trail-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .cg-trail-hint {
+    position: absolute;
+    right: max(1.5rem, calc((100vw - 64rem) / 2));
+    bottom: 0.5rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    color: hsl(var(--muted-foreground));
+    font: 0.7rem var(--font-mono);
+    letter-spacing: 0.06em;
+    pointer-events: none;
+  }
+  [data-trail-ready] .cg-trail-hint {
+    display: flex;
+  }
+  .cg-trail-hint span {
+    color: hsl(var(--primary));
   }
 </style>

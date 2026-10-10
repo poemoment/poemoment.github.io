@@ -4,6 +4,8 @@ import type { CuratedEntry } from '@/lib/curated'
 
 import CuratedItem from '@/components/curated/CuratedItem.astro'
 
+import '@/assets/styles/elastic-grid.css'
+
 interface Props {
   items: CuratedEntry[]
   lang?: Lang
@@ -32,7 +34,7 @@ const labels = {
   </div>
 
   <section id='content' class='mt-8' aria-label={labels[lang].title}>
-    <ul class='text-start' data-curated-list>
+    <ul class='elastic-grid text-start' data-curated-list data-elastic-grid>
       {items.map((item) => <CuratedItem item={item} lang={lang} variant='full' />)}
     </ul>
 

@@ -34,25 +34,28 @@ const recommendation = item.data.why || item.data.description
 
 <li
   data-curated-item
+  data-elastic-item={!isCompact ? '' : undefined}
   data-motion-reveal
   data-type={item.data.type}
   class:list={[
-    'motion-row min-w-0 list-none',
+    'min-w-0 list-none',
     isCompact
-      ? 'post-preview group/card rounded-2xl border bg-background transition-colors ease-in-out hover:bg-muted'
-      : 'border-b border-border/70 py-4 first:pt-0 last:border-b-0'
+      ? 'motion-row post-preview group/card rounded-2xl border bg-background transition-colors ease-in-out hover:bg-muted'
+      : 'elastic-card group/card'
   ]}
 >
   <article
     class:list={[
       'min-w-0',
-      isCompact ? 'px-5 py-2.5 sm:grid sm:grid-cols-[95px_minmax(0,1fr)] sm:gap-x-3' : ''
+      isCompact
+        ? 'px-5 py-2.5 sm:grid sm:grid-cols-[95px_minmax(0,1fr)] sm:gap-x-3'
+        : 'elastic-card-content'
     ]}
   >
     <div
       class:list={[
         'flex min-w-0 items-center gap-2 text-xs text-muted-foreground',
-        isCompact ? 'py-1' : 'mb-1'
+        isCompact ? 'py-1' : 'elastic-card-meta'
       ]}
     >
       <span class='shrink-0'>{typeLabel}</span>
@@ -83,7 +86,7 @@ const recommendation = item.data.why || item.data.description
         rel='noopener noreferrer'
         class:list={[
           'block min-w-0 font-medium leading-6 hover:text-primary group-hover/card:text-primary',
-          isCompact ? 'truncate' : 'text-base sm:text-lg'
+          isCompact ? 'truncate' : 'elastic-card-title text-base sm:text-lg'
         ]}
       >
         {item.data.sourceTitle || item.data.title}

@@ -1,0 +1,64 @@
+.project-stack-item {
+  min-width: 0;
+}
+.project-card-number {
+  display: none;
+}
+
+/* A card's lower padding is the overlap area; its controls stay above the next card. */
+@media (min-width: 1024px) {
+  .project-stack[data-project-stack-active] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 18px 14px 24px;
+    perspective: 1100px;
+    isolation: isolate;
+  }
+  [data-project-stack-active] > .project-stack-item {
+    position: relative;
+    z-index: var(--stack-order);
+    transform-origin: center 20%;
+    transform: translate3d(var(--stack-x, 0px), var(--stack-y, 0px), var(--stack-z, 0px))
+      rotateX(var(--stack-rx, 0deg)) rotateZ(var(--stack-rz, 0deg)) scale(var(--stack-scale, 1));
+    transition: transform 180ms ease-out;
+  }
+  [data-project-stack-active] > .project-stack-item + .project-stack-item {
+    margin-top: -28px;
+  }
+  [data-project-stack-active] .project-card {
+    min-height: 214px;
+    background: hsl(var(--background) / 0.94);
+    box-shadow: 0 12px 28px -24px hsl(var(--foreground) / 0.34);
+  }
+  [data-project-stack-active] .project-card-content {
+    padding: 26px 26px 60px;
+  }
+  [data-project-stack-active] .project-card-number {
+    position: absolute;
+    inset-inline-end: 24px;
+    bottom: 16px;
+    display: block;
+    color: hsl(var(--primary) / 0.55);
+    font: italic 1.5rem var(--font-serif, Georgia, serif);
+    pointer-events: none;
+  }
+  [data-project-stack-active] .project-description {
+    max-width: 34rem;
+    margin-block: 3px 8px;
+    height: auto;
+  }
+  /* The whole fan flattens while a reader is interacting with any of its cards. */
+  [data-project-stack-active][data-project-stack-interacting] > .project-stack-item {
+    transform: none;
+  }
+  [data-project-stack-active][data-project-stack-interacting] .motion-card {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-stack-item {
+    transform: none !important;
+    transition: none !important;
+  }
+}

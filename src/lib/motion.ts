@@ -1,3 +1,7 @@
+import { initElasticGrid } from '@/lib/elastic-grid'
+import { initImageTrail } from '@/lib/image-trail'
+import { initProjectStacks } from '@/lib/project-stack'
+
 /** Progressive enhancement: content and links remain visible without this module. */
 export function initMotion() {
   const root = document.documentElement
@@ -7,6 +11,7 @@ export function initMotion() {
   const surfaces = document.querySelectorAll<HTMLElement>('[data-motion-surface]')
   const reveals = document.querySelectorAll<HTMLElement>('[data-motion-reveal]')
   const animations = new Set<Animation>()
+  const features = [initImageTrail(), initProjectStacks(), initElasticGrid()]
   const english = root.lang.startsWith('en')
   let paused = false
   let enabled = false
@@ -75,6 +80,7 @@ export function initMotion() {
     for (const animation of animations) animation.cancel()
     animations.clear()
     resetPointer()
+    for (const feature of features) feature.setEnabled(enabled && !document.hidden)
 
     for (const control of controls) {
       control.hidden = false
@@ -150,9 +156,14 @@ export function initMotion() {
   window.addEventListener('resize', resetPointer, { passive: true })
   window.addEventListener('blur', resetPointer)
   window.addEventListener('pagehide', resetPointer)
+  // Restore controllers when a document returns from the browser's back/forward cache.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) update()
+  })
   document.addEventListener('visibilitychange', () => {
     root.toggleAttribute('data-motion-hidden', document.hidden)
     if (document.hidden) resetPointer()
+    for (const feature of features) feature.setEnabled(enabled && !document.hidden)
   })
   // Keep the preference coherent across tabs without requiring localStorage.
   window.addEventListener('storage', (event) => {

@@ -6,6 +6,8 @@ import type { iconsType } from 'astro-pure/types'
 import { Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
 
+import '@/assets/styles/project-stack.css'
+
 interface Props {
   class?: string
   project: {
@@ -21,6 +23,7 @@ interface Props {
   }[]
 }
 const { class: className, project, ...props } = Astro.props
+const hasStack = project.length > 1
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/projects/*.{jpeg,jpg,png,gif}'
 )
@@ -33,9 +36,12 @@ const projectIconSet: Record<string, iconsType> = {
 ---
 
 <div class={className} {...props}>
-  <div class='grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 sm:gap-y-4'>
+  <div
+    class='project-stack grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 sm:gap-y-4'
+    data-project-stack={hasStack ? '' : undefined}
+  >
     {
-      project.map((project) => {
+      project.map((project, index) => {
         var imagePath = null
         if (project.image) {
           imagePath = '/src/assets/projects/' + project.image
@@ -46,53 +52,62 @@ const projectIconSet: Record<string, iconsType> = {
         }
 
         return (
-          <div class='motion-card relative overflow-hidden rounded-xl border' data-motion-surface data-motion-reveal>
-            {imagePath && (
-              <Image
-                class='absolute end-0 z-0 m-0 h-full w-1/2 object-cover opacity-40'
-                src={images[imagePath]()}
-                alt={project.name}
-                loading='lazy'
-                style={{
-                  maskImage:
-                    'linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)',
-                  msMaskImage:
-                    '-ms-linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)',
-                  WebkitMaskImage:
-                    '-webkit-linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)'
-                }}
-              />
-            )}
+          <div class='project-stack-item' data-project-stack-item>
             <div
-              class={cn(
-                'relative z-10 flex flex-col gap-y-2 px-3 py-1.5 sm:px-4 sm:py-3',
-                imagePath && 'me-20'
-              )}
+              class='project-card motion-card relative overflow-hidden rounded-xl border'
+              data-motion-surface
+              data-motion-reveal
             >
-              <div class='flex items-baseline gap-x-2.5'>
-                {
-                  project.links.length > 0 ? (
+              {hasStack && (
+                <span class='project-card-number' aria-hidden='true'>
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+              )}
+              {imagePath && (
+                <Image
+                  class='absolute end-0 z-0 m-0 h-full w-1/2 object-cover opacity-40'
+                  src={images[imagePath]()}
+                  alt={project.name}
+                  loading='lazy'
+                  style={{
+                    maskImage:
+                      'linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)',
+                    msMaskImage:
+                      '-ms-linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)',
+                    WebkitMaskImage:
+                      '-webkit-linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)'
+                  }}
+                />
+              )}
+              <div
+                class={cn(
+                  'project-card-content relative z-10 flex flex-col gap-y-2 px-3 py-1.5 sm:px-4 sm:py-3',
+                  imagePath && 'me-20'
+                )}
+              >
+                <div class='flex items-baseline gap-x-2.5'>
+                  {project.links.length > 0 ? (
                     <a
                       class='project-title font-medium text-foreground no-underline transition-colors'
                       href={project.links[0].href}
                       target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
                       rel={
-                        /^https?:\/\//.test(project.links[0].href) ? 'noopener noreferrer' : undefined
+                        /^https?:\/\//.test(project.links[0].href)
+                          ? 'noopener noreferrer'
+                          : undefined
                       }
                     >
                       {project.name}
                     </a>
                   ) : (
                     <span class='project-title font-medium text-foreground'>{project.name}</span>
-                  )
-                }
-                {project.status && <span class='project-status'>{project.status}</span>}
-              </div>
-              <div class='project-description leading-snug text-muted-foreground sm:h-12'>
-                {project.description}
-              </div>
-              {
-                project.links.length > 0 && (
+                  )}
+                  {project.status && <span class='project-status'>{project.status}</span>}
+                </div>
+                <div class='project-description leading-snug text-muted-foreground sm:h-12'>
+                  {project.description}
+                </div>
+                {project.links.length > 0 && (
                   <div class='flex flex-row items-center gap-x-2 sm:gap-x-3'>
                     {project.links.map((link) => {
                       const icon = projectIconSet[link.type]
@@ -109,8 +124,8 @@ const projectIconSet: Record<string, iconsType> = {
                       )
                     })}
                   </div>
-                )
-              }
+                )}
+              </div>
             </div>
           </div>
         )
