@@ -85,7 +85,7 @@ const projectIconSet: Record<string, iconsType> = {
                   imagePath && 'me-20'
                 )}
               >
-                <div class='flex items-baseline gap-x-2.5'>
+                <div class='project-card-heading flex items-baseline gap-x-2.5'>
                   {project.links.length > 0 ? (
                     <a
                       class='project-title font-medium text-foreground no-underline transition-colors'
@@ -135,6 +135,14 @@ const projectIconSet: Record<string, iconsType> = {
 </div>
 
 <style>
+  .project-card-heading {
+    flex-wrap: wrap;
+    row-gap: 0.3rem;
+  }
+  .project-card-heading > .project-title {
+    min-width: 0;
+    flex: 1 1 14rem;
+  }
   .project-title {
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -160,5 +168,13 @@ const projectIconSet: Record<string, iconsType> = {
     overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-word;
+  }
+  @media (max-width: 1023px) {
+    .project-title {
+      display: block;
+      -webkit-line-clamp: unset;
+      line-clamp: unset;
+      overflow: visible;
+    }
   }
 </style>
