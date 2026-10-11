@@ -1,0 +1,302 @@
+---
+import { portraitArt } from '@/data/portrait-art'
+---
+
+<section
+  id='portrait-gallery'
+  class='portrait-gallery'
+  aria-labelledby='portrait-gallery-title'
+  data-portrait-gallery
+>
+  <header class='gallery-heading'>
+    <div>
+      <span class='gallery-eyebrow'>VISUAL NOTES</span>
+      <h2 id='portrait-gallery-title'>沿途的风景<span aria-hidden='true'>.</span></h2>
+    </div>
+    <div class='gallery-controls' data-gallery-controls hidden>
+      <button type='button' data-gallery-previous aria-label='查看前面的插画' disabled>
+        <span aria-hidden='true'>←</span>
+      </button>
+      <button type='button' data-gallery-next aria-label='查看后面的插画'>
+        <span aria-hidden='true'>→</span>
+      </button>
+    </div>
+  </header>
+
+  <div class='gallery-track' data-gallery-track>
+    {
+      portraitArt.map((art, index) => (
+        <figure class='gallery-poster' style={`--art-ratio: ${art.width / art.height}`}>
+          <a
+            class='poster-link'
+            href={art.src}
+            data-gallery-image
+            data-image-title={art.title}
+            aria-label={`放大查看：${art.title}`}
+          >
+            <div class='poster-window'>
+              <img
+                src={art.src}
+                width={art.width}
+                height={art.height}
+                alt={art.alt}
+                loading='lazy'
+                decoding='async'
+              />
+              <span class='poster-expand' aria-hidden='true'>
+                ↗
+              </span>
+            </div>
+          </a>
+          <figcaption>
+            <span class='poster-index' aria-hidden='true'>
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <span class='poster-title'>{art.title}</span>
+            <span class='poster-rule' aria-hidden='true' />
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+
+  <dialog class='portrait-dialog' aria-labelledby='portrait-dialog-title' data-gallery-dialog>
+    <div class='dialog-shell'>
+      <button class='dialog-close' type='button' data-gallery-close aria-label='关闭插画'>
+        <span aria-hidden='true'>×</span>
+      </button>
+      <img class='dialog-image' data-dialog-image alt='' />
+      <p class='dialog-caption' id='portrait-dialog-title' data-dialog-title></p>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  import { initPortraitGalleries } from '@/lib/portrait-gallery'
+
+  initPortraitGalleries()
+</script>
+
+<style>
+  .portrait-gallery {
+    min-width: 0;
+    margin-block: 4.5rem 2rem;
+  }
+  .gallery-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
+  }
+  .gallery-eyebrow {
+    color: hsl(var(--muted-foreground));
+    font: 0.62rem var(--font-mono);
+    letter-spacing: 0.2em;
+  }
+  .gallery-heading h2 {
+    margin-top: 0.5rem;
+    color: hsl(var(--foreground));
+    font: 650 clamp(1.35rem, 3vw, 1.75rem) / 1.35 var(--font-sans);
+    letter-spacing: -0.045em;
+  }
+  .gallery-heading h2 > span {
+    margin-left: 0.12em;
+    color: hsl(var(--primary));
+  }
+  .gallery-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .gallery-controls[hidden] {
+    display: none;
+  }
+  .gallery-controls button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 50%;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 1.05rem;
+    cursor: pointer;
+  }
+  .gallery-controls button:hover:not(:disabled) {
+    border-color: hsl(var(--primary) / 0.5);
+    background: hsl(var(--primary) / 0.08);
+  }
+  .gallery-controls button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .gallery-track {
+    display: flex;
+    align-items: start;
+    gap: 1.15rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+    padding: 0.4rem 0.3rem 1.25rem;
+    scroll-padding-inline: 0.3rem;
+  }
+  .gallery-poster {
+    flex: 0 0 auto;
+    width: calc(320px * var(--art-ratio));
+    margin: 0;
+    scroll-snap-align: start;
+  }
+  .poster-link {
+    display: block;
+    border-radius: 0.95rem;
+    color: hsl(var(--foreground));
+    text-decoration: none;
+  }
+  .poster-window {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 320px;
+    overflow: hidden;
+    border-radius: 0.95rem;
+    background: hsl(var(--muted) / 0.55);
+    box-shadow: 0 9px 20px -16px hsl(var(--foreground) / 0.3);
+  }
+  .poster-window img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .poster-expand {
+    position: absolute;
+    right: 0.7rem;
+    bottom: 0.7rem;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid hsl(0 0% 100% / 0.35);
+    border-radius: 50%;
+    background: hsl(230 30% 12% / 0.35);
+    color: white;
+    font-size: 0.9rem;
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+  }
+  .gallery-poster figcaption {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.95rem 0.12rem 0.1rem;
+  }
+  .poster-index {
+    color: hsl(var(--primary));
+    font: 0.58rem var(--font-mono);
+  }
+  .poster-title {
+    font-size: 0.76rem;
+    letter-spacing: 0.025em;
+  }
+  .poster-rule {
+    flex: 1;
+    height: 1px;
+    margin-left: 0.2rem;
+    background: hsl(var(--border));
+  }
+  .gallery-poster:hover .poster-title {
+    color: hsl(var(--primary));
+  }
+  .poster-link:focus-visible,
+  .gallery-controls button:focus-visible,
+  .dialog-close:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+  .portrait-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 1.5rem;
+    border: 0;
+    background: transparent;
+    color: white;
+    overscroll-behavior: contain;
+  }
+  .portrait-dialog[open] {
+    display: grid;
+    place-items: center;
+  }
+  .portrait-dialog::backdrop {
+    background: hsl(228 24% 7% / 0.92);
+    backdrop-filter: blur(10px);
+  }
+  .dialog-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    max-width: 100%;
+    padding-top: 3.25rem;
+  }
+  .dialog-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid hsl(0 0% 100% / 0.3);
+    border-radius: 50%;
+    background: hsl(0 0% 100% / 0.06);
+    color: white;
+    font-size: 1.65rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .dialog-close:hover {
+    background: hsl(0 0% 100% / 0.17);
+  }
+  .dialog-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 10rem);
+    object-fit: contain;
+    border-radius: 0.45rem;
+  }
+  .dialog-caption {
+    margin: 0;
+    color: hsl(0 0% 100% / 0.82);
+    font: 0.8rem var(--font-sans);
+    letter-spacing: 0.08em;
+  }
+  @media (max-width: 600px) {
+    .portrait-gallery {
+      margin-top: 3.5rem;
+    }
+    .gallery-track {
+      gap: 0.8rem;
+      scroll-snap-type: x mandatory;
+    }
+    .gallery-poster {
+      width: min(76vw, 280px);
+    }
+    .poster-window {
+      height: 300px;
+    }
+    .portrait-dialog {
+      padding: 1rem;
+    }
+  }
+</style>

@@ -1,9 +1,9 @@
 ---
-import type { SiteMeta } from 'astro-pure/types'
-
-import config from '@/site-config'
-import { getLangFromUrl, stripLangPrefix, withLangPrefix } from '@/i18n/ui'
 import { hasEnVersion } from '@/i18n/translations'
+import { getLangFromUrl, stripLangPrefix, withLangPrefix } from '@/i18n/ui'
+
+import type { SiteMeta } from 'astro-pure/types'
+import config from '@/site-config'
 
 type Props = SiteMeta
 
@@ -32,7 +32,9 @@ const hreflangAlternates = hasAlt
   try {
     document.documentElement.dataset.motion =
       matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      localStorage.getItem('poemoment:motion') === 'off' ? 'off' : 'on'
+      localStorage.getItem('poemoment:motion') === 'off'
+        ? 'off'
+        : 'on'
   } catch {
     document.documentElement.dataset.motion = 'off'
   }
@@ -49,11 +51,7 @@ const hreflangAlternates = hasAlt
 
 <link rel='canonical' href={canonicalURL} />
 
-{
-  hreflangAlternates.map((alt) => (
-    <link rel='alternate' hreflang={alt.hreflang} href={alt.href} />
-  ))
-}
+{hreflangAlternates.map((alt) => <link rel='alternate' hreflang={alt.hreflang} href={alt.href} />)}
 
 <meta content={siteTitle} name='title' />
 <meta content={description} name='description' />
@@ -94,4 +92,5 @@ const hreflangAlternates = hasAlt
 />
 
 <meta content={Astro.generator} name='generator' />
+{Astro.url.pathname.startsWith('/preview/') && <meta name='robots' content='noindex, nofollow' />}
 <link rel='stylesheet' href='/styles/global.css' />

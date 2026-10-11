@@ -1,0 +1,154 @@
+---
+import { getCollection } from 'astro:content'
+import { readingTopics } from '@/data/reading'
+
+import PageLayout from '@/layouts/BaseLayout.astro'
+import PortraitGallery from '@/components/home/PortraitGallery.astro'
+import PortraitHero from '@/components/home/PortraitHero.astro'
+
+import '@/assets/styles/home.css'
+
+const notes = (await getCollection('archive', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3)
+const date = (value: Date) => value.toISOString().slice(0, 10)
+---
+
+<PageLayout
+  meta={{ title: '竖版 CG 排版试览', description: '分栏首屏与竖版 CG 画廊的设计试览。' }}
+  data-pagefind-ignore='all'
+>
+  <main class='home-shell portrait-preview' id='content-header'>
+    <div class='preview-bar'>
+      <span><span class='preview-dot' aria-hidden='true'></span>竖版 CG · 排版试览</span>
+      <a href='/'>对照现首页 <span aria-hidden='true'>↗</span></a>
+    </div>
+    <PortraitHero />
+    <section class='first-screen' aria-label='最近记录与阅读'>
+      <div class='posts-col' id='content'>
+        <div class='col-heading'>
+          <h2>最近记录</h2><a class='col-more' href='/archive/'>全部随记 ↗</a>
+        </div>
+        <ol class='post-list latest-notes' data-home-notes>
+          {
+            notes.map((entry) => (
+              <li>
+                <a class='post-row' href={`/archive/${entry.id}/`}>
+                  <div class='post-main'>
+                    <>
+                      <span class='note-kind'>
+                        随记<span aria-hidden='true'>↗</span>
+                      </span>
+                      <h3>{entry.data.title}</h3>
+                    </>
+                    {entry.data.description && <p>{entry.data.description}</p>}
+                    <p class='post-meta-line'>
+                      <time datetime={entry.data.date.toISOString()}>{date(entry.data.date)}</time>
+                      {entry.data.tags[0] && (
+                        <>
+                          <span>·</span>
+                          <span>{entry.data.tags[0]}</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+      <div class='home-sidebar'>
+        <aside class='reading-col' aria-label='正在理解'>
+          <div class='col-heading'><h2>正在理解</h2></div>
+          <ul class='reading-list'>
+            {
+              readingTopics.slice(0, 3).map((topic) => (
+                <li>
+                  {topic.href ? (
+                    <a
+                      class='reading-item'
+                      href={topic.href}
+                      {...(/^https?:/.test(topic.href)
+                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        : {})}
+                    >
+                      <span class='reading-title'>{topic.title}</span>
+                    </a>
+                  ) : (
+                    <span class='reading-title'>{topic.title}</span>
+                  )}
+                  <span class='reading-meta'>
+                    <>
+                      <span class='reading-stage'>{topic.stage}</span>
+                      <time datetime={topic.updated}>{topic.updated}</time>
+                    </>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </aside>
+      </div>
+    </section>
+    <PortraitGallery />
+    <div class='preview-end'>
+      <span aria-hidden='true'>✦</span><p>把风景留在这里，继续向前。</p><a href='/curated/'
+        >去看看收藏 ↗</a
+      >
+    </div>
+  </main>
+</PageLayout>
+
+<style>
+  .preview-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font: 0.65rem var(--font-mono);
+    color: hsl(var(--muted-foreground));
+  }
+  .preview-bar > span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .preview-bar a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    color: hsl(var(--primary));
+  }
+  .preview-dot {
+    width: 5px;
+    height: 5px;
+    background: hsl(var(--primary));
+    border-radius: 50%;
+  }
+  .portrait-preview {
+    gap: 1.6rem;
+  }
+  .preview-end {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: hsl(var(--muted-foreground));
+  }
+  .preview-end > span {
+    color: hsl(var(--primary));
+    font-size: 1.2rem;
+  }
+  .preview-end p {
+    font: 0.9rem/1.8 var(--font-serif);
+    margin: 1rem 0;
+  }
+  .preview-end a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+  }
+</style>
