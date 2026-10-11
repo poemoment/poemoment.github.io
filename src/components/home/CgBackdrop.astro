@@ -13,14 +13,14 @@ interface Props {
 const { interactive = false, lang = 'zh' } = Astro.props
 ---
 
-<div class='cg-backdrop' data-image-trail={interactive ? '' : undefined} aria-hidden='true'>
+<div class='cg-backdrop' data-stardust-trail={interactive ? '' : undefined} aria-hidden='true'>
   <div class='cg-scene'></div>
   {
     interactive && (
       <>
-        <div class='image-trail-layer' data-trail-layer />
-        <span class='cg-trail-hint'>
-          {lang === 'en' ? 'Move to collect a little sky' : '移动鼠标，拾起一段晴空'}
+        <div class='stardust-layer' data-stardust-layer />
+        <span class='cg-stardust-hint'>
+          {lang === 'en' ? 'A little stardust follows your cursor' : '让指尖留下一点星光'}
           <span>↗</span>
         </span>
       </>
@@ -58,13 +58,13 @@ const { interactive = false, lang = 'zh' } = Astro.props
     filter: brightness(0.86) saturate(0.96);
   }
 
-  .image-trail-layer {
+  .stardust-layer {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  .cg-trail-hint {
+  .cg-stardust-hint {
     position: absolute;
     right: max(1.5rem, calc((100vw - 64rem) / 2));
     bottom: 0.5rem;
@@ -76,10 +76,10 @@ const { interactive = false, lang = 'zh' } = Astro.props
     letter-spacing: 0.06em;
     pointer-events: none;
   }
-  [data-trail-ready] .cg-trail-hint {
+  [data-stardust-ready] .cg-stardust-hint {
     display: flex;
   }
-  .cg-trail-hint span {
+  .cg-stardust-hint span {
     color: hsl(var(--primary));
   }
 </style>

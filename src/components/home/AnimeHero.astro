@@ -8,9 +8,10 @@ const english = lang === 'en'
 const prefix = english ? '/en' : ''
 ---
 
-<section class='anime-hero' aria-labelledby='home-title'>
+<section class='anime-hero' aria-labelledby='home-title' data-hero-parallax>
   <img
     class='hero-illustration'
+    data-parallax-image
     src='/backgrounds/final/cg-home.webp'
     width='2560'
     height='1840'
@@ -63,6 +64,19 @@ const prefix = english ? '/en' : ''
   .hero-illustration {
     object-fit: cover;
     object-position: center 64%;
+    translate: var(--hero-parallax-x, 0px) var(--hero-parallax-y, 0px);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .hero-illustration {
+      /* Cover the maximum displacement without shifting text or decorative layers. */
+      inset: -8px;
+      width: calc(100% + 16px);
+      max-width: none;
+      height: calc(100% + 16px);
+    }
+    .anime-hero[data-parallax-enabled] .hero-illustration {
+      transition: translate 380ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
   }
   .hero-shade {
     background: linear-gradient(
@@ -199,6 +213,10 @@ const prefix = english ? '/en' : ''
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .hero-illustration {
+      transition: none !important;
+      translate: none !important;
+    }
     .hero-wave {
       animation: none !important;
     }

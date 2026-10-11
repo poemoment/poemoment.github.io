@@ -1,7 +1,8 @@
 import { initElasticGrid } from '@/lib/elastic-grid'
-import { initImageTrail } from '@/lib/image-trail'
+import { initHeroParallax } from '@/lib/hero-parallax'
 import { initProjectStacks } from '@/lib/project-stack'
 import { initSakuraPetals } from '@/lib/sakura-petals'
+import { initStardustTrail } from '@/lib/stardust-trail'
 
 /** Progressive enhancement: content and links remain visible without this module. */
 export function initMotion() {
@@ -12,7 +13,13 @@ export function initMotion() {
   const surfaces = document.querySelectorAll<HTMLElement>('[data-motion-surface]')
   const reveals = document.querySelectorAll<HTMLElement>('[data-motion-reveal]')
   const animations = new Set<Animation>()
-  const features = [initImageTrail(), initProjectStacks(), initElasticGrid(), initSakuraPetals()]
+  const features = [
+    initHeroParallax(),
+    initStardustTrail(),
+    initProjectStacks(),
+    initElasticGrid(),
+    initSakuraPetals()
+  ]
   const english = root.lang.startsWith('en')
   let paused = false
   let enabled = false
