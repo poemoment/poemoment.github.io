@@ -12,9 +12,9 @@ const prefix = english ? '/en' : ''
   <img
     class='hero-illustration'
     data-parallax-image
-    src='/backgrounds/final/cg-home.webp'
-    width='2560'
-    height='1840'
+    src='/backgrounds/final/cg-hero-sakura.webp'
+    width='1920'
+    height='1080'
     alt=''
     fetchpriority='high'
     decoding='async'
@@ -63,7 +63,7 @@ const prefix = english ? '/en' : ''
   }
   .hero-illustration {
     object-fit: cover;
-    object-position: center 64%;
+    object-position: center 55%;
     translate: var(--hero-parallax-x, 0px) var(--hero-parallax-y, 0px);
   }
   @media (hover: hover) and (pointer: fine) {
@@ -185,7 +185,7 @@ const prefix = english ? '/en' : ''
       border-radius: 1.2rem;
     }
     .hero-illustration {
-      object-position: 57% 60%;
+      object-position: center 50%;
     }
     .hero-shade {
       background: linear-gradient(90deg, hsl(222 55% 15% / 0.65), hsl(222 55% 15% / 0.2));
