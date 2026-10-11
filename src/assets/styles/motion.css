@@ -139,10 +139,10 @@ html[data-motion='on'] .motion-card[data-pointer-active]::after {
   display: inline-block;
   color: hsl(var(--primary));
 }
-#headerExpandContent a[aria-label='Nav menu item'] {
+#headerExpandContent a[data-nav-item] {
   position: relative;
 }
-#headerExpandContent a[aria-label='Nav menu item']::after {
+#headerExpandContent a[data-nav-item]::after {
   content: '';
   position: absolute;
   inset-inline: 0.75rem;
@@ -153,7 +153,7 @@ html[data-motion='on'] .motion-card[data-pointer-active]::after {
   transform-origin: left;
   transition: transform 220ms ease;
 }
-#headerExpandContent a[aria-label='Nav menu item']:is(:hover, :focus-visible)::after {
+#headerExpandContent a[data-nav-item]:is(:hover, :focus-visible)::after {
   transform: scaleX(1);
 }
 

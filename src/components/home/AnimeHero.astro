@@ -1,0 +1,210 @@
+---
+import type { Lang } from '@/i18n/ui'
+
+import SakuraPetals from '@/components/SakuraPetals.astro'
+
+const { lang = 'zh' } = Astro.props as { lang?: Lang }
+const english = lang === 'en'
+const prefix = english ? '/en' : ''
+---
+
+<section class='anime-hero' aria-labelledby='home-title'>
+  <img
+    class='hero-illustration'
+    src='/backgrounds/final/cg-home.webp'
+    width='2560'
+    height='1840'
+    alt=''
+    fetchpriority='high'
+    decoding='async'
+  />
+  <div class='hero-shade' aria-hidden='true'></div>
+  <SakuraPetals />
+  <div class='hero-copy' data-motion-reveal>
+    <span class='hero-eyebrow'>LEARN · BUILD · DAYDREAM</span>
+    <h1 id='home-title'>poemoment<span aria-hidden='true'>.</span></h1>
+    <p>
+      {english ? 'Learning, building, and a little daydreaming.' : '记录学习，也收藏沿途的晴空。'}
+    </p>
+    <div class='hero-actions'>
+      <a href={`${prefix}/archive/`} class='hero-link hero-link-primary'>
+        {english ? 'Read the notebook' : '翻开笔记'}<span aria-hidden='true'>↗</span>
+      </a>
+      <a href={`${prefix}/projects/`} class='hero-link'>
+        {english ? 'Explore projects' : '看看项目'}<span aria-hidden='true'>→</span>
+      </a>
+    </div>
+  </div>
+  <span class='hero-corner' aria-hidden='true'>a little sky, a little curiosity</span>
+  <svg class='hero-wave' viewBox='0 0 1200 64' preserveAspectRatio='none' aria-hidden='true'>
+    <path class='hero-wave-back' d='M0 23C170 80 300 0 470 29S780 70 930 28S1080 8 1200 25V64H0Z'
+    ></path>
+    <path d='M0 44C170 2 330 74 500 42S830 5 1000 41S1130 61 1200 37V64H0Z'></path>
+  </svg>
+</section>
+
+<style>
+  .anime-hero {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(320px, 36vw, 450px);
+    overflow: clip;
+    border-radius: 1.6rem;
+    background: #2875c0;
+    box-shadow: 0 18px 50px -32px hsl(218 55% 30% / 0.35);
+  }
+  .hero-illustration,
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-illustration {
+    object-fit: cover;
+    object-position: center 64%;
+  }
+  .hero-shade {
+    background: linear-gradient(
+      90deg,
+      hsl(222 55% 15% / 0.68),
+      hsl(220 60% 20% / 0.22) 55%,
+      transparent 85%
+    );
+  }
+  :global(html.dark) .hero-illustration {
+    filter: brightness(0.78) saturate(0.85);
+  }
+  .hero-copy {
+    position: relative;
+    z-index: 2;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1.5rem, 5vw, 3.5rem) 5rem;
+    color: white;
+  }
+  .hero-eyebrow {
+    font: 0.65rem var(--font-mono);
+    letter-spacing: 0.22em;
+    opacity: 0.8;
+  }
+  .hero-copy h1 {
+    margin: 0.75rem 0 0.55rem;
+    font: 750 clamp(2.6rem, 6.2vw, 4.6rem) / 1.08 var(--font-sans);
+    letter-spacing: -0.06em;
+    text-shadow: 0 2px 24px hsl(222 55% 15% / 0.2);
+  }
+  .hero-copy h1 span {
+    color: #f4b9d1;
+  }
+  .hero-copy p {
+    max-width: 27rem;
+    font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+    line-height: 1.8;
+    color: hsl(220 40% 98% / 0.94);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.6rem;
+  }
+  .hero-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 1px solid hsl(0 0% 100% / 0.4);
+    border-radius: 0.8rem;
+    background: hsl(222 55% 15% / 0.25);
+    color: white;
+    font-size: 0.8rem;
+    backdrop-filter: blur(8px);
+    transition:
+      background 200ms,
+      translate 200ms;
+  }
+  .hero-link-primary {
+    border-color: transparent;
+    background: #f6f6ff;
+    color: #344b7a;
+  }
+  .hero-link:hover {
+    background: #f2d9ec;
+    color: #344b7a;
+  }
+  :global(html[data-motion='on']) .hero-link:hover {
+    translate: 0 -2px;
+  }
+  .hero-corner {
+    position: absolute;
+    right: 2rem;
+    bottom: 4rem;
+    color: white;
+    font: italic 0.7rem var(--font-serif);
+    opacity: 0.75;
+  }
+  .hero-wave {
+    position: absolute;
+    z-index: 3;
+    left: -4%;
+    bottom: -1px;
+    width: 108%;
+    height: 48px;
+    fill: hsl(var(--background));
+    pointer-events: none;
+  }
+  .hero-wave-back {
+    opacity: 0.45;
+  }
+  :global(html[data-motion='on']:not([data-motion-hidden])) .hero-wave {
+    animation: sky-wave 10s ease-in-out infinite alternate;
+  }
+  @keyframes sky-wave {
+    to {
+      transform: translateX(3%);
+    }
+  }
+  @media (max-width: 639px) {
+    .anime-hero {
+      min-height: 350px;
+      border-radius: 1.2rem;
+    }
+    .hero-illustration {
+      object-position: 57% 60%;
+    }
+    .hero-shade {
+      background: linear-gradient(90deg, hsl(222 55% 15% / 0.65), hsl(222 55% 15% / 0.2));
+    }
+    .hero-copy {
+      padding: 3rem 1.35rem 4rem;
+    }
+    .hero-eyebrow {
+      letter-spacing: 0.1em;
+      font-size: 0.58rem;
+    }
+    .hero-copy h1 {
+      font-size: clamp(2.3rem, 10vw, 3.6rem);
+    }
+    .hero-copy p {
+      max-width: 17rem;
+      font-size: 0.86rem;
+    }
+    .hero-link {
+      gap: 0.8rem;
+      padding-inline: 0.85rem;
+    }
+    .hero-corner {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-wave {
+      animation: none !important;
+    }
+    .hero-link {
+      transition: none;
+      translate: none !important;
+    }
+  }
+</style>

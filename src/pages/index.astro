@@ -1,11 +1,14 @@
 ---
 import { getCollection, render } from 'astro:content'
-
-import PageLayout from '@/layouts/BaseLayout.astro'
-import CgBackdrop from '@/components/home/CgBackdrop.astro'
-import ThoughtOrbit from '@/components/home/ThoughtOrbit.astro'
 import { siteColumns } from '@/data/columns'
 import { hasReadingTopics, readingTopics } from '@/data/reading'
+
+import PageLayout from '@/layouts/BaseLayout.astro'
+import AnimeHero from '@/components/home/AnimeHero.astro'
+import CgBackdrop from '@/components/home/CgBackdrop.astro'
+import ThoughtOrbit from '@/components/home/ThoughtOrbit.astro'
+
+import '@/assets/styles/home.css'
 
 export const prerender = true
 
@@ -49,14 +52,18 @@ const columnLatest: Record<
   archive: {
     count: archiveEntries.length,
     unit: '条',
-    latest:
-      archiveEntries[0] && { title: archiveEntries[0].data.title, href: `/archive/${archiveEntries[0].id}/` }
+    latest: archiveEntries[0] && {
+      title: archiveEntries[0].data.title,
+      href: `/archive/${archiveEntries[0].id}/`
+    }
   },
   curated: {
     count: curatedEntries.length,
     unit: '条',
-    latest:
-      curatedEntries[0] && { title: curatedEntries[0].data.title, href: `/curated/${curatedEntries[0].id}/` }
+    latest: curatedEntries[0] && {
+      title: curatedEntries[0].data.title,
+      href: `/curated/${curatedEntries[0].id}/`
+    }
   }
 }
 
@@ -77,45 +84,16 @@ const formatDate = (date: Date) =>
 
 <PageLayout meta={{ title: '首页' }}>
   <main class='home-shell' id='content-header'>
+    <AnimeHero />
     {/* 首屏：3 / 6 / 3 —— 当前状态 · 最近文章 · 正在理解 */}
     <section class='first-screen' aria-label='最近文章与当前状态'>
-      <aside class='status-col' aria-label='当前状态' data-motion-reveal>
-        <h2 class='col-title'>状态</h2>
-        {
-          recentActivity && (
-            <p class='status-row'>
-              <span class='status-label'>最近更新</span>
-              <span class='status-value'>
-                <time datetime={recentActivity.date.toISOString()} data-rel>
-                  {formatDate(recentActivity.date)}
-                </time>
-                <span class='status-sep'>·</span>
-                {recentActivity.label}
-              </span>
-            </p>
-          )
-        }
-        {
-          hasReadingTopics && readingTopics[0] && (
-            <p class='status-row'>
-              <span class='status-label'>正在理解</span>
-              <span class='status-value'>{readingTopics[0].title}</span>
-            </p>
-          )
-        }
-        <p class='status-row'>
-          <span class='status-label'>订阅</span>
-          <span class='status-value'><a href='/rss.xml'>RSS</a></span>
-        </p>
-      </aside>
-
       <div class='posts-col' id='content' data-motion-reveal>
         <div class='col-heading'>
-          <h2>最近文章</h2>
+          <h2>{posts.length ? '最近文章' : '最近记录'}</h2>
           {
-            allPosts.length > 0 && (
-              <a href='/blog/' class='col-more'>
-                全部 {allPosts.length} 篇
+            (allPosts.length > 0 || archiveEntries.length > 0) && (
+              <a href={posts.length ? '/blog/' : '/archive/'} class='col-more'>
+                {posts.length ? `全部 ${allPosts.length} 篇` : '全部随记'}
               </a>
             )
           }
@@ -168,55 +146,119 @@ const formatDate = (date: Date) =>
             </ol>
           ) : (
             <div class='empty-state'>
-              <p>还没有公开文章。第一篇写完就会出现在这里。</p>
+              <p>
+                {archiveEntries.length
+                  ? '完整文章还在准备中，先从最近的随记开始。'
+                  : '还没有公开文章。第一篇写完就会出现在这里。'}
+              </p>
               <p class='empty-alt'>
                 现在可以先看<a href='/archive/'>随记</a>与<a href='/curated/'>收藏</a>。
               </p>
+              <ol class='post-list latest-notes' data-home-notes>
+                {archiveEntries.slice(0, 3).map((entry) => (
+                  <li data-motion-reveal>
+                    <a class='post-row' href={`/archive/${entry.id}/`}>
+                      <div class='post-main'>
+                        <span class='note-kind'>
+                          随记<span aria-hidden='true'>↗</span>
+                        </span>
+                        <h3>{entry.data.title}</h3>
+                        {entry.data.description && <p>{entry.data.description}</p>}
+                        <p class='post-meta-line'>
+                          <time datetime={entry.data.date.toISOString()} data-rel>
+                            {formatDate(entry.data.date)}
+                          </time>
+                          {entry.data.tags[0] && (
+                            <>
+                              <span class='meta-sep'>·</span>
+                              <span class='meta-tag'>{entry.data.tags[0]}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ol>
               <ThoughtOrbit />
             </div>
           )
         }
       </div>
-
-      {
-        hasReadingTopics && (
-          <aside class='reading-col' aria-label='正在理解的主题'>
-            <div class='col-heading'>
-              <h2>正在理解</h2>
-            </div>
-            <ul class='reading-list'>
-              {readingTopics.map((topic) => (
-                <li data-motion-reveal>
-                  {topic.href ? (
-                    <a
-                      class='reading-item'
-                      href={topic.href}
-                      {...(/^https?:\/\//.test(topic.href)
-                        ? { target: '_blank', rel: 'noopener noreferrer' }
-                        : {})}
-                    >
-                      <span class='reading-title'>{topic.title}</span>
-                      <span class='reading-meta'>
-                        <span class='reading-stage'>{topic.stage}</span>
-                        <time datetime={topic.updated} data-rel title={topic.updated}>{topic.updated}</time>
-                      </span>
-                    </a>
-                  ) : (
-                    <div class='reading-item'>
-                      <span class='reading-title'>{topic.title}</span>
-                      <span class='reading-meta'>
-                        <span class='reading-stage'>{topic.stage}</span>
-                        <time datetime={topic.updated} data-rel title={topic.updated}>{topic.updated}</time>
-                      </span>
-                    </div>
-                  )}
-                  {topic.source && <p class='reading-source'>{topic.source}</p>}
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )
-      }
+      <div class='home-sidebar'>
+        {
+          hasReadingTopics && (
+            <aside class='reading-col' aria-label='正在理解的主题'>
+              <div class='col-heading'>
+                <h2>正在理解</h2>
+              </div>
+              <ul class='reading-list'>
+                {readingTopics.map((topic) => (
+                  <li data-motion-reveal>
+                    {topic.href ? (
+                      <a
+                        class='reading-item'
+                        href={topic.href}
+                        {...(/^https?:\/\//.test(topic.href)
+                          ? { target: '_blank', rel: 'noopener noreferrer' }
+                          : {})}
+                      >
+                        <span class='reading-title'>{topic.title}</span>
+                        <span class='reading-meta'>
+                          <span class='reading-stage'>{topic.stage}</span>
+                          <time datetime={topic.updated} data-rel title={topic.updated}>
+                            {topic.updated}
+                          </time>
+                        </span>
+                      </a>
+                    ) : (
+                      <div class='reading-item'>
+                        <span class='reading-title'>{topic.title}</span>
+                        <span class='reading-meta'>
+                          <span class='reading-stage'>{topic.stage}</span>
+                          <time datetime={topic.updated} data-rel title={topic.updated}>
+                            {topic.updated}
+                          </time>
+                        </span>
+                      </div>
+                    )}
+                    {topic.source && <p class='reading-source'>{topic.source}</p>}
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )
+        }
+        <aside class='status-col' aria-label='当前状态' data-motion-reveal>
+          <h2 class='col-title'>状态</h2>
+          {
+            recentActivity && (
+              <p class='status-row'>
+                <span class='status-label'>最近更新</span>
+                <span class='status-value'>
+                  <time datetime={recentActivity.date.toISOString()} data-rel>
+                    {formatDate(recentActivity.date)}
+                  </time>
+                  <span class='status-sep'>·</span>
+                  {recentActivity.label}
+                </span>
+              </p>
+            )
+          }
+          {
+            hasReadingTopics && readingTopics[0] && (
+              <p class='status-row'>
+                <span class='status-label'>正在理解</span>
+                <span class='status-value'>{readingTopics[0].title}</span>
+              </p>
+            )
+          }
+          <p class='status-row'>
+            <span class='status-label'>订阅</span>
+            <span class='status-value'><a href='/rss.xml'>RSS</a></span>
+          </p>
+        </aside>
+      </div>
     </section>
 
     {/* 第二屏：栏目索引（不是卡片网格） */}
@@ -313,382 +355,3 @@ const formatDate = (date: Date) =>
     })
   </script>
 </PageLayout>
-
-<style>
-  .home-shell {
-    display: flex;
-    flex-direction: column;
-    gap: 4.5rem;
-    padding-bottom: 4rem;
-  }
-
-  /* ---- 首屏三栏 ---------------------------------------------------------- */
-  .first-screen {
-    display: grid;
-    grid-template-columns: 3fr 6fr 3fr;
-    gap: 2.5rem;
-    padding-top: 0.75rem;
-  }
-
-  .col-title {
-    margin: 0 0 1rem;
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .col-heading {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid hsl(var(--border));
-    padding-bottom: 0.75rem;
-  }
-
-  .col-heading h2 {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-size: 1.15rem;
-    font-weight: 650;
-  }
-
-  .col-more {
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    white-space: nowrap;
-  }
-
-  .col-more:hover {
-    color: hsl(var(--primary));
-  }
-
-  /* 左栏：当前状态 */
-  .status-col {
-    font-size: 0.98rem;
-    line-height: 1.7;
-  }
-
-  .status-row {
-    margin: 0 0 0.9rem;
-  }
-
-  .status-label {
-    display: block;
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-  }
-
-  .status-value {
-    color: hsl(var(--foreground));
-  }
-
-  .status-sep {
-    margin: 0 0.35rem;
-    color: hsl(var(--muted-foreground));
-  }
-
-  .status-value time,
-  .status-value a {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-  }
-
-  /* 中栏：文章行是视觉主角 */
-  .post-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .post-row {
-    display: block;
-    padding: 1.15rem 0 1.15rem 0.9rem;
-    border-left: 2px solid transparent;
-  }
-
-  .post-main h3 {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-size: 1.18rem;
-    font-weight: 650;
-    line-height: 1.45;
-    transition: color 0.2s ease;
-  }
-
-  /* 视觉菜单 ⑬：未读小圆点，出现在标题前；hidden 态必须显式压过 display */
-  .unread-dot {
-    display: inline-block;
-    width: 0.42rem;
-    height: 0.42rem;
-    margin-right: 0.45rem;
-    border-radius: 50%;
-    background: hsl(var(--primary));
-    vertical-align: 0.14em;
-  }
-
-  .unread-dot[hidden] {
-    display: none;
-  }
-
-  .post-main p:not(.post-meta-line) {
-    display: -webkit-box;
-    margin: 0.35rem 0 0;
-    overflow: hidden;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.95rem;
-    line-height: 1.65;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-
-  /* 视觉菜单 ④：间隔号元数据一行（日期 · 阅读时长 · 首个标签），学自 craigmod 的书籍规格排版 */
-  .post-meta-line {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    margin: 0.5rem 0 0;
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    white-space: nowrap;
-  }
-
-  .post-meta-line .meta-sep {
-    color: hsl(var(--border));
-  }
-
-  .post-meta-line .meta-pin {
-    color: hsl(var(--primary));
-    letter-spacing: 0.05em;
-  }
-
-  .post-meta-line .meta-tag {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* 悬停只改变标题颜色与左侧细线 */
-  @media (hover: hover) {
-    .post-row:hover {
-      border-left-color: hsl(var(--primary));
-    }
-
-    .post-row:hover h3 {
-      color: hsl(var(--primary));
-    }
-  }
-
-  .empty-state {
-    padding: 2.5rem 0;
-    color: hsl(var(--muted-foreground));
-    line-height: 1.9;
-  }
-
-  .empty-state p {
-    margin: 0;
-  }
-
-  .empty-alt {
-    font-size: 0.98rem;
-  }
-
-  .empty-alt a {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* 右栏：正在理解 */
-  .reading-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .reading-list li {
-    padding: 1rem 0;
-    border-bottom: 1px solid hsl(var(--border));
-  }
-
-  .reading-list li:last-child {
-    border-bottom: 0;
-  }
-
-  .reading-item {
-    display: block;
-    text-decoration: none;
-  }
-
-  .reading-title {
-    display: block;
-    font-size: 1.02rem;
-    font-weight: 600;
-    line-height: 1.6;
-    transition: color 0.2s ease;
-  }
-
-  a.reading-item:hover .reading-title {
-    color: hsl(var(--primary));
-  }
-
-  .reading-meta {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.35rem;
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-  }
-
-  .reading-stage {
-    color: hsl(var(--primary));
-  }
-
-  .reading-source {
-    margin: 0.35rem 0 0;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.9rem;
-    line-height: 1.6;
-  }
-
-  /* ---- 第二屏：栏目索引 --------------------------------------------------- */
-  .column-index {
-    border-top: 1px solid hsl(var(--border));
-    padding-top: 2.25rem;
-  }
-
-  .column-list {
-    margin: 1.25rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .column-row {
-    display: grid;
-    grid-template-columns: 10rem minmax(0, 1fr) auto;
-    gap: 2rem;
-    align-items: start;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid hsl(var(--border));
-  }
-
-  .column-name {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .column-name h3 {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-size: 1.05rem;
-    font-weight: 650;
-  }
-
-  .column-count {
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-  }
-
-  .column-definition {
-    margin: 0;
-    color: hsl(var(--muted-foreground));
-    line-height: 1.7;
-  }
-
-  .column-latest {
-    display: inline-block;
-    margin-top: 0.4rem;
-    font-size: 0.95rem;
-  }
-
-  .column-latest:hover {
-    color: hsl(var(--primary));
-  }
-
-  .column-go {
-    align-self: center;
-    color: hsl(var(--muted-foreground));
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    white-space: nowrap;
-  }
-
-  .column-go:hover {
-    color: hsl(var(--primary));
-  }
-
-  /* ---- 响应式 ------------------------------------------------------------ */
-  @media (max-width: 1024px) {
-    .first-screen {
-      grid-template-columns: minmax(0, 1fr) 16rem;
-    }
-
-    .status-col {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-      gap: 0 1.5rem;
-    }
-
-    .status-col .col-title {
-      grid-column: 1 / -1;
-    }
-  }
-
-  /* 手机首屏直接进入最近文章 */
-  @media (max-width: 768px) {
-    .home-shell {
-      gap: 3.5rem;
-    }
-
-    .first-screen {
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    .posts-col {
-      order: 0;
-    }
-
-    .reading-col {
-      order: 1;
-    }
-
-    .status-col {
-      order: 2;
-      display: block;
-    }
-
-    .post-row {
-      padding-left: 0.6rem;
-    }
-
-    .post-main h3 {
-      font-size: 1.1rem;
-    }
-
-    .column-row {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.6rem;
-    }
-
-    .column-go {
-      justify-self: start;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .post-main h3,
-    .reading-title {
-      transition: none;
-    }
-  }
-</style>

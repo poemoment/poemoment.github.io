@@ -23,7 +23,7 @@ const menuKeyMap: Record<string, Parameters<typeof t>[0]> = {
 }
 
 const menu = (config.header?.menu ?? []).map((item) => {
-  const key = menuKeyMap[item.link]
+  const key = menuKeyMap[item.link.replace(/\/+$/, '')]
   return {
     title: key ? t(key) : item.title,
     link: localizedPath(item.link, lang)
@@ -35,10 +35,10 @@ const searchHref = localizedPath('/search', lang)
 ---
 
 <header-component
-  class='group sticky top-4 z-[70] mb-12 flex items-center justify-between rounded-2xl border border-transparent max-sm:py-1'
+  class='group sticky top-4 z-[70] mb-6 flex items-center justify-between rounded-2xl border border-transparent max-md:py-1'
 >
   <a
-    class='brand z-30 text-xl font-semibold group-[.not-top]:ms-2 sm:group-[.not-top]:ms-3'
+    class='brand z-30 text-xl font-semibold group-[.not-top]:ms-2 md:group-[.not-top]:ms-3'
     style='transition:margin-inline 0.3s'
     href={homeHref}
     aria-label='Brand'>{config.title}</a
@@ -48,22 +48,22 @@ const searchHref = localizedPath('/search', lang)
     {/* Menu links */}
     <div
       id='headerExpandContent'
-      class='end-0 start-0 top-12 grid border border-transparent group-[.not-top]:rounded group-[.expanded]:opacity-100 dark:group-[.expanded.not-top]:bg-muted max-sm:absolute max-sm:opacity-0 max-sm:group-[.not-top]:border-border max-sm:group-[.expanded.not-top]:bg-background max-sm:group-[.not-top]:px-4 max-sm:group-[.not-top]:py-2 sm:grid-rows-1'
+      class='end-0 start-0 top-12 grid border border-transparent group-[.not-top]:rounded group-[.expanded]:opacity-100 dark:group-[.expanded.not-top]:bg-muted max-md:absolute max-md:opacity-0 max-md:group-[.not-top]:border-border max-md:group-[.expanded.not-top]:bg-background max-md:group-[.not-top]:px-4 max-md:group-[.not-top]:py-2 md:grid-rows-1'
     >
-      <div class='flex flex-col items-center justify-center overflow-hidden sm:flex-row'>
+      <div class='flex flex-col items-center justify-center overflow-hidden md:flex-row'>
         {
           menu.map((item) => (
             <a
               href={item.link}
-              class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary sm:w-fit sm:px-3'
-              aria-label='Nav menu item'
+              class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary md:w-fit md:px-3'
+              data-nav-item
             >
               {item.title}
             </a>
           ))
         }
-        <div class='flex w-full grow flex-row justify-end gap-x-3 sm:w-fit sm:gap-x-5'>
-          <a class='px-1 py-2 transition-none sm:px-2' href={searchHref} title={t('nav.search')}>
+        <div class='flex w-full grow flex-row justify-end gap-x-3 md:w-fit md:gap-x-5'>
+          <a class='px-1 py-2 transition-none md:px-2' href={searchHref} title={t('nav.search')}>
             <span class='sr-only'>{t('nav.search')}</span>
             <Icon name='search' class='size-5' />
           </a>
@@ -72,11 +72,11 @@ const searchHref = localizedPath('/search', lang)
     </div>
 
     {/* buttons */}
-    <div class='z-30 flex gap-x-4 group-[.not-top]:gap-x-2' style='transition:gap 0.3s'>
+    <div class='z-30 flex gap-x-2' style='transition:gap 0.3s'>
       <LanguageSwitcher lang={lang} />
       <button
         id='toggleDevMode'
-        class='group/dev box-content h-5 rounded border p-1.5 font-mono text-xs leading-5 tracking-tight text-muted-foreground transition-colors hover:bg-border hover:text-primary sm:group-[.not-top]:rounded'
+        class='group/dev box-content h-5 rounded border p-1.5 font-mono text-xs leading-5 tracking-tight text-muted-foreground transition-colors hover:bg-border hover:text-primary md:group-[.not-top]:rounded'
         aria-label='Enter dev mode'
         title='dev mode (press `)'
       >
@@ -84,7 +84,7 @@ const searchHref = localizedPath('/search', lang)
       </button>
       <button
         id='toggleDarkMode'
-        class='group/dark box-content size-5 rounded border p-1.5 transition-colors hover:bg-border sm:group-[.not-top]:rounded'
+        class='group/dark box-content size-5 rounded border p-1.5 transition-colors hover:bg-border md:group-[.not-top]:rounded'
       >
         <span class='sr-only'>{t('nav.toggleDarkMode')}</span>
         <Icon class='system size-5 group-hover/dark:text-primary' name='computer' />
@@ -93,7 +93,7 @@ const searchHref = localizedPath('/search', lang)
       </button>
       <button
         id='toggleMenu'
-        class='rounded border p-1.5 transition-colors hover:bg-border sm:hidden sm:group-[.not-top]:rounded'
+        class='rounded border p-1.5 transition-colors hover:bg-border md:hidden md:group-[.not-top]:rounded'
         aria-controls='headerExpandContent'
         aria-expanded='false'
       >
@@ -142,6 +142,12 @@ const searchHref = localizedPath('/search', lang)
       this.setMenuExpanded(false)
     }
 
+    private handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !this.classList.contains('expanded')) return
+      this.setMenuExpanded(false)
+      this.toggleMenuBtn?.focus()
+    }
+
     connectedCallback() {
       let preScrollY = window.scrollY
       this.classList.toggle('not-top', preScrollY > 20)
@@ -168,10 +174,12 @@ const searchHref = localizedPath('/search', lang)
       })
 
       document.addEventListener('pointerdown', this.handleDocumentPointerDown)
+      this.addEventListener('keydown', this.handleKeyDown)
     }
 
     disconnectedCallback() {
       document.removeEventListener('pointerdown', this.handleDocumentPointerDown)
+      this.removeEventListener('keydown', this.handleKeyDown)
     }
   }
 
@@ -180,8 +188,12 @@ const searchHref = localizedPath('/search', lang)
 
 <style>
   header-component {
-    /* 学 joye:页首无框,导航只是几行浮在背景上的文字;
-       滚动后(.not-top)才收成有框纯色底的药丸,深翻页自动隐藏、回翻召回 */
+    /* Keep navigation legible over the illustration; hide on downward scroll. */
+    padding: 0.65rem 0.85rem;
+    background: hsl(var(--card) / 0.96);
+    border-color: hsl(var(--border) / 0.65);
+    box-shadow: 0 8px 28px -20px hsl(var(--foreground) / 0.18);
+    backdrop-filter: blur(14px);
     transition:
       padding 0.3s,
       transform 0.3s,
@@ -208,23 +220,23 @@ const searchHref = localizedPath('/search', lang)
     }
   }
   .brand {
-    font-family: var(--font-serif);
-    letter-spacing: -0.01em;
+    font-family: var(--font-sans);
+    font-weight: 750;
+    letter-spacing: -0.045em;
   }
-  @media (min-width: 800px) {
-    header-component.not-top {
-      margin-inline: 8%;
-    }
+  #headerExpandContent a {
+    font-size: 0.85rem;
   }
   :global(.dark) header-component.not-top {
     background-color: hsl(var(--card));
   }
 
   /* header menu */
-  @media (max-width: 640px) {
+  @media (max-width: 767px) {
     #headerExpandContent {
       top: calc(100% + 0.5rem);
       grid-template-rows: 0fr;
+      visibility: hidden;
       transition:
         opacity 0.3s,
         padding 0.3s,
@@ -233,6 +245,11 @@ const searchHref = localizedPath('/search', lang)
     }
     .expanded #headerExpandContent {
       grid-template-rows: 1fr;
+      visibility: visible;
+      padding: 0.65rem 1rem;
+      border-radius: 1rem;
+      background: hsl(var(--card));
+      border-color: hsl(var(--border));
     }
     .expanded.not-top #headerExpandContent {
       box-shadow:
@@ -240,28 +257,6 @@ const searchHref = localizedPath('/search', lang)
         rgba(24, 24, 27, 0.08) 0px 0px 0px 1px,
         rgba(39, 39, 42, 0.08) 0px 10px 15px -3px,
         rgba(39, 39, 42, 0.08) 0px 4px 6px -4px;
-    }
-
-    /* header component after */
-    header-component #headerExpandContent::after {
-      box-sizing: content-box;
-      content: '';
-      position: absolute;
-      inset-inline: calc(-1rem - 1px);
-      bottom: 0;
-      top: -5rem;
-      z-index: -1;
-      transition: 0.3s;
-      visibility: hidden;
-      opacity: 0;
-      border-bottom: 1px solid transparent;
-    }
-    header-component:not(.not-top) #headerExpandContent::after {
-      visibility: visible;
-      bottom: -1rem;
-      opacity: 1;
-      background-color: hsl(var(--muted) / var(--un-bg-opacity, 1));
-      border-bottom-color: hsl(var(--border) / var(--un-border-opacity, 1));
     }
   }
 

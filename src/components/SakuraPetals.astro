@@ -1,0 +1,38 @@
+---
+import '@/assets/styles/sakura-petals.css'
+
+// Deterministic placement keeps the reading column clear in both languages.
+const petals = [
+  { left: 1.5, size: 11, duration: 18, delay: -8, drift: 8, turn: 130 },
+  { left: 97.5, size: 14, duration: 24, delay: -18, drift: -10, turn: -155 },
+  { left: 3.5, size: 10, duration: 22, delay: -4, drift: -5, turn: 185 },
+  { left: 95, size: 12, duration: 19, delay: -12, drift: 6, turn: -210 },
+  { left: 0.5, size: 9, duration: 25, delay: -20, drift: 12, turn: 150 },
+  { left: 5.5, size: 13, duration: 23, delay: -15, drift: -8, turn: -175 },
+  { left: 94, size: 10, duration: 21, delay: -6, drift: 7, turn: 220 },
+  { left: 98.5, size: 12, duration: 26, delay: -22, drift: -12, turn: -130 },
+  { left: 2.5, size: 15, duration: 27, delay: -13, drift: 5, turn: 200 },
+  { left: 96.5, size: 9, duration: 20, delay: -2, drift: -8, turn: -180 },
+  { left: 4.5, size: 11, duration: 24, delay: -21, drift: -6, turn: 160 },
+  { left: 99.5, size: 13, duration: 28, delay: -9, drift: -9, turn: -230 }
+]
+---
+
+<div class='sakura-petals' data-sakura-petals aria-hidden='true' inert>
+  {
+    petals.map((petal) => (
+      <span
+        class='sakura-petal'
+        style={`--petal-left:${petal.left}%;--petal-size:${petal.size}px;--petal-duration:${petal.duration}s;--petal-delay:${petal.delay}s;--petal-drift:${petal.drift}px;--petal-turn:${petal.turn}deg`}
+      >
+        <svg viewBox='0 0 20 28' fill='none' aria-hidden='true'>
+          <path
+            d='M10 1C3 6 0 13 3 20c1 4 4 6 7 7 3-1 6-3 7-7 3-7 0-14-7-19Z'
+            fill='currentColor'
+          />
+          <path d='M10 6c-2 7-2 13 0 18' stroke='currentColor' stroke-width='0.8' opacity='0.6' />
+        </svg>
+      </span>
+    ))
+  }
+</div>

@@ -15,11 +15,11 @@
 /* Type system: serif for display/headings, sans for body, mono for metadata */
 :root {
   --font-serif:
-    'Source Serif 4', Georgia, 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', STSong,
-    SimSun, serif;
+    'Source Serif 4', Georgia, 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', STSong, SimSun,
+    serif;
   --font-sans: 'Satoshi', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Menlo, Consolas,
-    monospace;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
 }
 
 html {
@@ -28,59 +28,59 @@ html {
 
 /* Theme */
 :root {
-  /* 研究档案室（方案 A）：米色纸底、暖墨正文、赭红强调；圆角 0–4px、无阴影 */
-  --background: 43 35% 92%;
-  --foreground: 43 8% 13%;
-  --card: 43 38% 94.5%;
-  --card-foreground: 43 8% 13%;
-  --popover: 43 38% 94.5%;
-  --popover-foreground: 43 8% 13%;
-  --primary: 10 48% 44%;
-  --primary-foreground: 43 38% 94%;
-  --secondary: 43 25% 89%;
-  --secondary-foreground: 43 8% 15%;
-  --muted: 43 25% 89%;
-  --muted-foreground: 40 5% 42%;
-  --accent: 43 25% 88%;
-  --accent-foreground: 43 8% 15%;
+  /* Sky notebook: cool paper, readable blue ink, and soft pink accents. */
+  --background: 225 40% 97%;
+  --foreground: 226 24% 21%;
+  --card: 0 0% 100%;
+  --card-foreground: 226 24% 21%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 226 24% 21%;
+  --primary: 218 58% 43%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 38% 93%;
+  --secondary-foreground: 226 24% 24%;
+  --muted: 224 38% 94%;
+  --muted-foreground: 222 12% 43%;
+  --accent: 332 52% 93%;
+  --accent-foreground: 226 24% 24%;
   --destructive: 0 72% 45%;
   --destructive-foreground: 0 0% 98%;
-  --border: 43 15% 80%;
-  --input: 43 14% 81%;
-  --ring: 10 48% 44%;
-  --radius: 0.25rem;
+  --border: 222 30% 86%;
+  --input: 222 30% 86%;
+  --ring: 218 58% 43%;
+  --radius: 0.8rem;
   --term-surface: 43 30% 92%;
   --term-chrome: 43 25% 89%;
   --term-ok: 152 45% 30%;
-  --code-bg: 43 22% 90%;
-  --code-fg: 43 8% 15%;
+  --code-bg: 224 32% 95%;
+  --code-fg: 226 24% 21%;
 }
 .dark {
-  /* 深空星野：蓝黑夜空底、冷白正文、星光青强调；无霓虹 */
-  --background: 225 28% 6%;
-  --foreground: 225 21% 92%;
-  --card: 225 22% 8%;
-  --card-foreground: 225 21% 92%;
-  --popover: 225 22% 8%;
-  --popover-foreground: 225 21% 92%;
-  --primary: 182 27% 63%;
-  --primary-foreground: 225 28% 6%;
-  --secondary: 225 18% 12%;
-  --secondary-foreground: 225 15% 86%;
-  --muted: 225 18% 11%;
-  --muted-foreground: 224 10% 62%;
-  --accent: 225 18% 12%;
-  --accent-foreground: 225 15% 86%;
+  /* Moonlit counterpart: lavender and blue over quiet opaque reading surfaces. */
+  --background: 229 31% 8%;
+  --foreground: 224 28% 93%;
+  --card: 229 24% 13%;
+  --card-foreground: 224 28% 93%;
+  --popover: 229 24% 13%;
+  --popover-foreground: 224 28% 93%;
+  --primary: 221 85% 78%;
+  --primary-foreground: 229 31% 8%;
+  --secondary: 229 22% 17%;
+  --secondary-foreground: 224 25% 89%;
+  --muted: 229 22% 16%;
+  --muted-foreground: 224 17% 69%;
+  --accent: 285 25% 20%;
+  --accent-foreground: 224 25% 89%;
   --destructive: 0 62% 40%;
   --destructive-foreground: 0 0% 98%;
-  --border: 225 14% 20%;
-  --input: 225 12% 18%;
-  --ring: 182 27% 63%;
+  --border: 229 18% 25%;
+  --input: 229 18% 25%;
+  --ring: 221 85% 78%;
   --term-surface: 225 25% 5%;
   --term-chrome: 225 25% 4%;
   --term-ok: 142 55% 62%;
-  --code-bg: 225 18% 10%;
-  --code-fg: 225 15% 88%;
+  --code-bg: 229 26% 10%;
+  --code-fg: 224 25% 89%;
 }
 :root {
   --un-default-border-color: hsl(var(--border) / 1);
@@ -163,11 +163,21 @@ html.dark .page-bg::after {
 
 /* Keep the notebook and its orbit readable over the photographic detail. */
 .page-bg[data-page='home']::after {
-  background: linear-gradient(to right, hsl(var(--background) / 0.1), hsl(var(--background) / 0.4) 50%, hsl(var(--background) / 0.5));
+  background: linear-gradient(
+    to right,
+    hsl(var(--background) / 0.1),
+    hsl(var(--background) / 0.4) 50%,
+    hsl(var(--background) / 0.5)
+  );
 }
 html.dark .page-bg[data-page='home']::after {
   content: '';
-  background: linear-gradient(to right, hsl(var(--background) / 0.15), hsl(var(--background) / 0.5) 50%, hsl(var(--background) / 0.4));
+  background: linear-gradient(
+    to right,
+    hsl(var(--background) / 0.15),
+    hsl(var(--background) / 0.5) 50%,
+    hsl(var(--background) / 0.4)
+  );
 }
 
 /* 深色:图库星空组,即当背景本身 */

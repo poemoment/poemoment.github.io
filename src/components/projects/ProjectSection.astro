@@ -58,11 +58,7 @@ const projectIconSet: Record<string, iconsType> = {
               data-motion-surface
               data-motion-reveal
             >
-              {hasStack && (
-                <span class='project-card-number' aria-hidden='true'>
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-              )}
+              <span class='project-card-accent' aria-hidden='true' />
               {imagePath && (
                 <Image
                   class='absolute end-0 z-0 m-0 h-full w-1/2 object-cover opacity-40'
@@ -81,40 +77,45 @@ const projectIconSet: Record<string, iconsType> = {
               )}
               <div
                 class={cn(
-                  'project-card-content relative z-10 flex flex-col gap-y-2 px-3 py-1.5 sm:px-4 sm:py-3',
+                  'project-card-content relative z-10 flex flex-col gap-y-3',
                   imagePath && 'me-20'
                 )}
               >
-                <div class='project-card-heading flex items-baseline gap-x-2.5'>
-                  {project.links.length > 0 ? (
-                    <a
-                      class='project-title font-medium text-foreground no-underline transition-colors'
-                      href={project.links[0].href}
-                      target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
-                      rel={
-                        /^https?:\/\//.test(project.links[0].href)
-                          ? 'noopener noreferrer'
-                          : undefined
-                      }
-                    >
-                      {project.name}
-                    </a>
-                  ) : (
-                    <span class='project-title font-medium text-foreground'>{project.name}</span>
-                  )}
-                  {project.status && <span class='project-status'>{project.status}</span>}
+                <div class='project-card-heading'>
+                  <span class='project-card-number' aria-hidden='true'>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div class='project-card-identity'>
+                    <h3 class='project-card-title'>
+                      {project.links.length > 0 ? (
+                        <a
+                          class='project-title text-foreground no-underline transition-colors'
+                          href={project.links[0].href}
+                          target={/^https?:\/\//.test(project.links[0].href) ? '_blank' : undefined}
+                          rel={
+                            /^https?:\/\//.test(project.links[0].href)
+                              ? 'noopener noreferrer'
+                              : undefined
+                          }
+                        >
+                          {project.name}
+                        </a>
+                      ) : (
+                        <span class='project-title text-foreground'>{project.name}</span>
+                      )}
+                    </h3>
+                    {project.status && <span class='project-status'>{project.status}</span>}
+                  </div>
                 </div>
-                <div class='project-description leading-snug text-muted-foreground sm:h-12'>
-                  {project.description}
-                </div>
+                <div class='project-description text-muted-foreground'>{project.description}</div>
                 {project.links.length > 0 && (
-                  <div class='flex flex-row items-center gap-x-2 sm:gap-x-3'>
+                  <div class='project-card-links flex flex-row items-center gap-x-2 sm:gap-x-3'>
                     {project.links.map((link) => {
                       const icon = projectIconSet[link.type]
                       return (
                         <a
                           href={link.href}
-                          class='rounded-full bg-muted p-1 text-muted-foreground transition-colors sm:p-1.5'
+                          class='project-card-link text-muted-foreground transition-colors'
                           aria-label={`${project.name} · ${link.type}`}
                           target={/^https?:\/\//.test(link.href) ? '_blank' : undefined}
                           rel={/^https?:\/\//.test(link.href) ? 'noopener noreferrer' : undefined}
@@ -136,31 +137,30 @@ const projectIconSet: Record<string, iconsType> = {
 
 <style>
   .project-card-heading {
-    flex-wrap: wrap;
-    row-gap: 0.3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
   }
-  .project-card-heading > .project-title {
+  .project-card-identity {
     min-width: 0;
-    flex: 1 1 14rem;
+    flex: 1;
+  }
+  .project-card-heading .project-card-title {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: -0.025em;
+  }
+  .project-card-title > a.project-title {
+    font: inherit;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 1;
   }
   .project-title {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-break: break-word;
-  }
-  /* 状态小字:等宽+主题色,不加底色(全站透明纪律) */
-  .project-status {
-    flex-shrink: 0;
-    color: hsl(var(--primary));
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-  }
-  .project-description {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -168,6 +168,26 @@ const projectIconSet: Record<string, iconsType> = {
     overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-word;
+  }
+  .project-status {
+    display: block;
+    margin-top: 0.3rem;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .project-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.7;
   }
   @media (max-width: 1023px) {
     .project-title {

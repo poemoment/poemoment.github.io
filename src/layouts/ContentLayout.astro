@@ -1,9 +1,9 @@
 ---
-import BackToTop from '@/components/pages/BackToTop.astro'
 import type { SiteMeta } from 'astro-pure/types'
 import { Button, Icon } from 'astro-pure/user'
 import { cn } from 'astro-pure/utils'
 import PageLayout from '@/layouts/BaseLayout.astro'
+import BackToTop from '@/components/pages/BackToTop.astro'
 import { integ } from '@/site-config'
 
 interface Props {
@@ -48,7 +48,7 @@ const isEn = Astro.url.pathname.startsWith('/en')
       <div
         id='content'
         class={cn(
-          'max-w-[70ch] min-w-0 animate mt-8 overflow-x-hidden',
+          'reading-paper max-w-[70ch] min-w-0 animate mt-8 overflow-x-hidden',
           integ.typography.class
         )}
       >
