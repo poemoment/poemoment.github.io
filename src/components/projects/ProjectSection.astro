@@ -16,9 +16,12 @@ interface Props {
     description: string
     /** 项目状态小字(如「开发中 · 暂未开源」);无链接的项目用它交代去向 */
     status?: string
+    /** Date and scope of the linked project write-up, not a live metric. */
+    evidence?: string
     links: {
       type: string
       href: string
+      label?: string
     }[]
   }[]
 }
@@ -108,6 +111,7 @@ const projectIconSet: Record<string, iconsType> = {
                   </div>
                 </div>
                 <div class='project-description text-muted-foreground'>{project.description}</div>
+                {project.evidence && <p class='project-evidence'>{project.evidence}</p>}
                 {project.links.length > 0 && (
                   <div class='project-card-links flex flex-row items-center gap-x-2 sm:gap-x-3'>
                     {project.links.map((link) => {
@@ -116,11 +120,12 @@ const projectIconSet: Record<string, iconsType> = {
                         <a
                           href={link.href}
                           class='project-card-link text-muted-foreground transition-colors'
-                          aria-label={`${project.name} · ${link.type}`}
+                          aria-label={`${project.name} · ${link.label ?? link.type}`}
                           target={/^https?:\/\//.test(link.href) ? '_blank' : undefined}
                           rel={/^https?:\/\//.test(link.href) ? 'noopener noreferrer' : undefined}
                         >
                           <Icon class='size-5' name={icon} />
+                          {link.label && <span>{link.label}</span>}
                         </a>
                       )
                     })}
@@ -188,6 +193,19 @@ const projectIconSet: Record<string, iconsType> = {
     text-overflow: ellipsis;
     word-break: break-word;
     line-height: 1.7;
+  }
+  .project-evidence {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: hsl(var(--muted-foreground));
+    font-variant-numeric: tabular-nums;
+  }
+  .project-card-link:has(span) {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+    font-size: 0.8125rem;
+    text-decoration: none;
   }
   @media (max-width: 1023px) {
     .project-title {

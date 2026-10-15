@@ -10,188 +10,161 @@ interface Props {
   meta: SiteMeta
   highlightColor?: string
   back?: string
-  /** 长篇文章才显示阅读进度球;随记详情等短内容不显示(移动端侧栏按钮也随之隐藏) */
+  /** 阅读进度与目录独立，短随记也可以有章节导航。 */
   showProgress?: boolean
 }
 
 const { meta, highlightColor, back = '/', showProgress = false, ...props } = Astro.props
-
-// 中英站点共用本布局,按路径决定按钮文案
 const isEn = Astro.url.pathname.startsWith('/en')
+const sidebarHTML = await Astro.slots.render('sidebar')
+// Empty TOCs can still emit their component script; neither should reserve a column.
+const hasSidebar = Boolean(sidebarHTML?.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<!--[\s\S]*?-->/g, '').trim())
+const hasBottomSidebar = Astro.slots.has('bottom-sidebar')
 ---
 
 <PageLayout {meta} {highlightColor} {...props}>
   <Button title={isEn ? 'Back' : '返回'} href={back} style='back' />
-  <main class='mt-6 items-start gap-x-10 lg:flex'>
-    {/* Sidebar */}
-    <aside
-      class='animate top-20 min-w-48 basis-60 overflow-y-scroll max-lg:hidden z-40 fixed lg:sticky lg:order-2 lg:shrink-0 max-lg:border max-lg:px-4 max-lg:py-3 max-lg:bg-muted max-lg:rounded-xl'
-      style='height:calc(100vh - 7rem);'
-      id='sidebar'
-    >
-      <slot name='sidebar' />
-    </aside>
-    <div
-      id='sidebar-shade'
-      class='fixed top-0 start-0 w-full h-full'
-      style='display:none;background-color:#00000091;z-index:31'
-    >
-    </div>
+  <main class:list={['reading-layout mt-6', { 'has-sidebar': hasSidebar }]}>
+    {
+      hasSidebar && (
+        <aside class='reading-sidebar' aria-label={isEn ? 'Article navigation' : '正文导航'}>
+          <details id='sidebar' open>
+            <summary class='chapter-toggle'>
+              <span><Icon name='list' />{isEn ? 'On this page' : '本页目录'}</span>
+              <span class='chapter-chevron' aria-hidden='true'>⌄</span>
+            </summary>
+            <div class='chapter-list'><Fragment set:html={sidebarHTML} /></div>
+          </details>
+        </aside>
+      )
+    }
 
-    <article class='min-w-0 grow'>
-      {/* Content header */}
+    <article class='reading-article min-w-0'>
       <div id='content-header' class='animate'>
         <slot name='header' />
       </div>
-
-      {/* Content */}
       <div
         id='content'
-        class={cn(
-          'reading-paper max-w-[70ch] min-w-0 animate mt-8 overflow-x-hidden',
-          integ.typography.class
-        )}
+        class={cn('reading-paper min-w-0 animate mt-8 overflow-x-hidden', integ.typography.class)}
       >
         <slot />
       </div>
     </article>
   </main>
 
-  <div class='bottom mt-6 items-start gap-x-10 lg:flex'>
-    {/* Bottom */}
-    <div class='mt-8 min-w-0 flex-1 text-muted-foreground'>
+  <div class:list={['reading-bottom mt-6', { 'has-sidebar': hasSidebar }]}>
+    <div class='mt-8 min-w-0 text-muted-foreground'>
       <slot name='bottom' />
     </div>
-    <div class='min-w-0 lg:min-w-48 lg:basis-60'>
-      <slot name='bottom-sidebar' />
-    </div>
+    {hasBottomSidebar && <div class='min-w-0'><slot name='bottom-sidebar' /></div>}
   </div>
 
-  {
-    showProgress && (
-      <BackToTop header='content-header' content='content'>
-        <button
-          slot='other-icons'
-          aria-label='Toggle sidebar'
-          aria-controls='sidebar'
-          class='size-10 flex items-center justify-center rounded-full border-2 border-transparent bg-muted text-muted-foreground duration-300 hover:border-border/75 lg:hidden sm:size-12'
-          id='sidebar-btn'
-        >
-          <Icon name='list' />
-        </button>
-      </BackToTop>
-    )
-  }
+  {showProgress && <BackToTop header='content-header' content='content' />}
 </PageLayout>
 
 <script>
-  // Toggle sidebar visibility on button click
-  const sidebarButton = document.getElementById('sidebar-btn')
-  const sidebar = document.getElementById('sidebar')
-  const sidebarShade = document.getElementById('sidebar-shade') as HTMLElement | null
-
-  if (sidebarShade) {
-    sidebarShade.addEventListener('click', () => {
-      closeSidebar()
+  const chapters = document.querySelector<HTMLDetailsElement>('#sidebar')
+  if (chapters) {
+    const summary = chapters.querySelector<HTMLElement>('summary')
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const synchronize = () => {
+      const focusInside = chapters.contains(document.activeElement)
+      chapters.open = desktop.matches
+      if (!desktop.matches && focusInside) summary?.focus({ preventScroll: true })
+    }
+    synchronize()
+    desktop.addEventListener('change', synchronize)
+    chapters.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !desktop.matches && chapters.open) {
+        event.preventDefault()
+        chapters.open = false
+        summary?.focus({ preventScroll: true })
+      }
+    })
+    // TOC moves focus to the selected heading; closing this disclosure does not trap focus.
+    chapters.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : null
+      if (!desktop.matches && target?.closest('a[href^="#"]')) chapters.open = false
     })
   }
-
-  function openSidebar() {
-    if (!sidebar) return
-
-    sidebar.classList.add('show')
-    if (sidebarShade) sidebarShade.style.display = 'block'
-    sidebarButton?.setAttribute('aria-expanded', 'true')
-  }
-
-  function closeSidebar() {
-    if (!sidebar) return
-
-    sidebar.classList.remove('show')
-    if (sidebarShade) sidebarShade.style.display = 'none'
-    sidebarButton?.setAttribute('aria-expanded', 'false')
-  }
-
-  function toggleSidebar() {
-    if (sidebar?.classList.contains('show')) {
-      closeSidebar()
-    } else {
-      openSidebar()
-    }
-  }
-
-  sidebar?.addEventListener('click', (event) => {
-    const target = event.target as HTMLElement | null
-    if (target?.closest('a')) window.setTimeout(closeSidebar, 0)
-  })
-
-  window.addEventListener('hashchange', closeSidebar)
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeSidebar()
-  })
-
-  sidebarButton?.setAttribute('aria-expanded', 'false')
-  sidebarButton?.addEventListener('click', () => {
-    toggleSidebar()
-  })
-
-  window.addEventListener('resize', () => {
-    if (window.matchMedia('(min-width: 1024px)').matches) {
-      sidebar?.classList.remove('show')
-      if (sidebarShade) sidebarShade.style.display = 'none'
-      sidebarButton?.setAttribute('aria-expanded', 'false')
-    }
-  })
 </script>
-<style>
-  @media (min-width: 1024px) {
-    #sidebar-shade {
-      display: none !important;
-    }
-  }
-  @media (max-width: 1023px) {
-    aside.show {
-      display: block !important;
-      opacity: 1;
-    }
 
-    @keyframes fade-in-side {
-      0% {
-        transform: translateX(50%);
-        opacity: 0;
-      }
-      100% {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    @keyframes fade-in {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-    aside {
-      animation: 300ms fade-in-side !important;
-      animation-fill-mode: forwards;
-      right: 0;
-      top: 0 !important;
-      height: 100vh !important;
-      min-width: 40vw !important;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      padding-top: 1.5rem !important;
-      padding-bottom: 1.5rem !important;
-    }
-    #sidebar-shade {
-      animation: 300ms fade-in;
-    }
+<style>
+  .reading-layout,
+  .reading-bottom {
+    max-width: 70ch;
+    margin-inline: auto;
   }
-  @media (max-width: 640px) {
-    aside {
-      min-width: 55vw !important;
+  .reading-sidebar {
+    margin-bottom: 1.5rem;
+  }
+  #content :global(:is(h2, h3, h4, h5, h6)) {
+    scroll-margin-top: 6rem;
+  }
+  .chapter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    list-style: none;
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .chapter-toggle::-webkit-details-marker { display: none; }
+  .chapter-toggle > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .chapter-toggle:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+    border-radius: 0.75rem;
+  }
+  details {
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.85rem;
+    background: hsl(var(--card));
+  }
+  details[open] .chapter-chevron { transform: rotate(180deg); }
+  .chapter-list {
+    padding: 0 0.75rem 1rem;
+    max-height: min(60vh, 28rem);
+    overflow-y: auto;
+  }
+  .chapter-list :global(toc-heading > h2) { display: none; }
+  .chapter-list :global(toc-heading ul) { margin-top: 0; }
+  @media (min-width: 1024px) {
+    .has-sidebar {
+      max-width: none;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 15rem;
+      align-items: start;
+      column-gap: 2.5rem;
     }
+    .reading-sidebar {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: 5rem;
+      margin-bottom: 0;
+    }
+    .reading-article {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .chapter-toggle { display: none; }
+    details {
+      border: 0;
+      background: transparent;
+    }
+    .chapter-list {
+      padding: 0;
+      max-height: calc(100dvh - 7rem);
+    }
+    .chapter-list :global(toc-heading > h2) { display: block; }
+    .chapter-list :global(toc-heading > nav > ul) { margin-top: 1rem; }
   }
 </style>

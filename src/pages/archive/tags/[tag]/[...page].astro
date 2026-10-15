@@ -38,34 +38,27 @@ const { page } = Astro.props as unknown as Props
 const { tag } = Astro.params
 
 const statusLabels: Record<string, string> = {
-  'in-progress': '🚧 In Progress',
-  incomplete: '⏸️ Incomplete',
-  ready: '✅ Ready',
-  archived: '📦 Archived'
-}
-
-const statusColors: Record<string, string> = {
-  'in-progress': 'text-blue-600 dark:text-blue-400',
-  incomplete: 'text-yellow-600 dark:text-yellow-400',
-  ready: 'text-green-600 dark:text-green-400',
-  archived: 'text-gray-500 dark:text-gray-400'
+  'in-progress': '整理中',
+  incomplete: '待补充',
+  ready: '整理完成',
+  archived: '已归档'
 }
 
 const meta = {
-  title: `Archive Tag: ${tag}`,
-  description: `Archive entries tagged with ${tag}`
+  title: `${tag} · 随记`,
+  description: `关于 ${tag} 的学习笔记与工程复盘。`
 }
 
 const paginationProps = {
   ...(page.url.prev && {
     prevUrl: {
-      text: '← Previous Entries',
+      text: '← 上一页',
       url: page.url.prev
     }
   }),
   ...(page.url.next && {
     nextUrl: {
-      text: 'Next Entries →',
+      text: '下一页 →',
       url: page.url.next
     }
   })
@@ -82,11 +75,11 @@ const paginationProps = {
         <h1 class='text-3xl font-medium'>{tag}</h1>
       </div>
       <p class='mb-6 text-muted-foreground'>
-        {page.total} {page.total === 1 ? 'entry' : 'entries'} with this tag
+        收录 {page.total} 篇相关随记，记录实践中的判断与问题。
       </p>
     </div>
 
-    <section id='content' class='animate' aria-label='Archive entries'>
+    <section id='content' class='animate' aria-label='相关随记'>
       <ul class='space-y-3'>
         {
           page.data.map((entry) => (
@@ -103,17 +96,13 @@ const paginationProps = {
                   </div>
                   <div class='min-w-0 flex-1'>
                     <div class='mb-1 flex items-start justify-between gap-4'>
-                      <h3 class='font-medium leading-tight group-hover:text-foreground'>
+                      <h2 class='font-medium leading-tight group-hover:text-foreground'>
                         {entry.data.title}
-                      </h3>
+                      </h2>
                       <span
-                        class={`shrink-0 text-xs ${statusColors[entry.data.status]}`}
-                        title={statusLabels[entry.data.status]}
+                        class='shrink-0 rounded-md bg-muted px-2 py-1 text-xs text-foreground'
                       >
-                        {entry.data.status === 'in-progress' && '🚧'}
-                        {entry.data.status === 'incomplete' && '⏸️'}
-                        {entry.data.status === 'ready' && '✅'}
-                        {entry.data.status === 'archived' && '📦'}
+                        {statusLabels[entry.data.status]}
                       </span>
                     </div>
                     {entry.data.description && (
@@ -124,15 +113,18 @@ const paginationProps = {
                         {entry.data.date.toLocaleDateString('zh-CN', {
                           year: 'numeric',
                           month: 'short',
-                          day: 'numeric'
+                          day: 'numeric',
+                          timeZone: 'Asia/Shanghai'
                         })}
                       </time>
-                      {entry.data.updatedDate && (
+                      {entry.data.updatedDate && entry.data.updatedDate > entry.data.date && (
                         <span>
                           · 更新于{' '}
                           {entry.data.updatedDate.toLocaleDateString('zh-CN', {
+                            year: 'numeric',
                             month: 'short',
-                            day: 'numeric'
+                            day: 'numeric',
+                            timeZone: 'Asia/Shanghai'
                           })}
                         </span>
                       )}

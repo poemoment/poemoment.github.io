@@ -96,7 +96,8 @@ export const integ: IntegrationUserConfig = {
       { name: 'Avatar', val: 'https://poemoment.github.io/favicon/favicon.ico' }
     ]
   },
-  pagefind: true,
+  // Search uses the published-content JSON index shared with the site terminal.
+  pagefind: false,
   quote: {
     server: 'https://api.quotable.io/quotes/random?maxLength=60',
     target: `(data) => data[0]?.content || 'Placeholder quote'`

@@ -1,34 +1,27 @@
 ---
 import { Button } from 'astro-pure/user'
-import PFSearch from '@/components/search/PFSearch.astro'
-import CgBackdrop from '@/components/home/CgBackdrop.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
-import { integ } from '@/site-config'
+import CgBackdrop from '@/components/home/CgBackdrop.astro'
+import PFSearch from '@/components/search/PFSearch.astro'
 
 const meta = {
-  description: 'Search relative posts of the whole blog',
+  description: '搜索已发布的技术文章、学习随记与收藏推荐。',
   title: '搜索'
 }
 ---
 
 <PageLayout {meta}>
-  <Button title='返回' href='/blog/' style='back' />
+  <Button title='返回首页' href='/' style='back' />
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
       <h1 class='mb-6 text-3xl font-medium'>搜索</h1>
     </div>
 
     <div id='content' class='animate'>
-      {
-        integ.pagefind ? (
-          <>
-            <p>输入关键词搜索站内文章与页面。</p>
-            <PFSearch />
-          </>
-        ) : (
-          <p>Pagefind is disabled.</p>
-        )
-      }
+      <p class='text-sm leading-7 text-muted-foreground'>
+        搜索已发布的文章、随记和收藏推荐，从标题、摘要与正文中查找。
+      </p>
+      <PFSearch />
     </div>
     <CgBackdrop />
   </main>

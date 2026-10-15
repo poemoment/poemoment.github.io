@@ -33,6 +33,7 @@ const recommendation = item.data.why || item.data.description
 ---
 
 <li
+  id={!isCompact ? `curated-${item.id}` : undefined}
   data-curated-item
   data-elastic-item={!isCompact ? '' : undefined}
   data-motion-reveal

@@ -1,7 +1,8 @@
-import type { AstroGlobal, ImageMetadata } from 'astro'
+import path from 'node:path'
+import type { APIRoute, ImageMetadata } from 'astro'
 import { getImage } from 'astro:assets'
-import type { CollectionEntry } from 'astro:content'
-import rss from '@astrojs/rss'
+import { getCollection, type CollectionEntry } from 'astro:content'
+import rss, { type RSSFeedItem } from '@astrojs/rss'
 import type { Root } from 'mdast'
 import rehypeStringify from 'rehype-stringify'
 import remarkParse from 'remark-parse'
@@ -9,76 +10,101 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 import config from 'virtual:config'
-import { getBlogCollection, sortMDByDate } from 'astro-pure/server'
 
 export const prerender = true
 
-// Get dynamic import of images as a map collection
 const imagesGlob = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/content/blog/**/*.{jpeg,jpg,png,gif}' // add more image formats if needed
+  '/src/content/{blog,archive}/**/*.{jpeg,jpg,png,gif,webp,avif}'
 )
 
-const renderContent = async (post: CollectionEntry<'blog'>, site: URL) => {
-  // Replace image links with the correct path
-  function remarkReplaceImageLink() {
-    /**
-     * @param {Root} tree
-     */
+type AuthoredEntry = CollectionEntry<'blog' | 'archive'>
+
+const renderContent = async (post: AuthoredEntry, site: URL, permalink: string) => {
+  function remarkAbsoluteLinks() {
     return async function (tree: Root) {
-      const promises: Promise<void>[] = []
+      const images: Promise<void>[] = []
+      visit(tree, 'link', (node) => {
+        node.url = new URL(node.url, permalink).href
+      })
       visit(tree, 'image', (node) => {
-        if (node.url.startsWith('/images')) {
-          node.url = `${site}${node.url.replace('/', '')}`
+        // Bundled images resolve relative to the Markdown source, not its public route.
+        const sourceFile = post.filePath
+          ? path.relative(process.cwd(), path.resolve(post.filePath)).replaceAll('\\', '/')
+          : ''
+        const imageKey = path.posix.resolve('/', path.posix.dirname(sourceFile), node.url)
+        const bundledImage = !/^(?:[a-z]+:|\/)/i.test(node.url) && imagesGlob[imageKey]
+        if (bundledImage) {
+          images.push(
+            bundledImage().then(async ({ default: src }) => {
+              node.url = new URL((await getImage({ src })).src, site).href
+            })
+          )
         } else {
-          const imagePathPrefix = `/src/content/blog/${post.id}/${node.url.replace('./', '')}`
-          const promise = imagesGlob[imagePathPrefix]?.().then(async (res) => {
-            const imagePath = res?.default
-            if (imagePath) {
-              node.url = `${site}${(await getImage({ src: imagePath })).src.replace('/', '')}`
-            }
-          })
-          if (promise) promises.push(promise)
+          node.url = new URL(node.url, permalink).href
         }
       })
-      await Promise.all(promises)
+      await Promise.all(images)
     }
   }
 
   const file = await unified()
     .use(remarkParse)
-    .use(remarkReplaceImageLink)
+    .use(remarkAbsoluteLinks)
     .use(remarkRehype)
     .use(rehypeStringify)
-    .process(post.body)
+    .process(post.body ?? '')
 
   return String(file)
 }
 
-const GET = async (context: AstroGlobal) => {
-  const allPostsByDate = sortMDByDate(await getBlogCollection()) as CollectionEntry<'blog'>[]
-  const siteUrl = context.site ?? new URL(import.meta.env.SITE)
+const escapeHtml = (value: string) =>
+  value.replace(
+    /[&<>"']/g,
+    (character) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!
+  )
+
+export const GET: APIRoute = async ({ site }) => {
+  const siteUrl = site ?? new URL(import.meta.env.SITE)
+  const [posts, notes, curated] = await Promise.all([
+    getCollection('blog', ({ data }) => !data.draft),
+    getCollection('archive', ({ data }) => !data.draft),
+    getCollection('curated', ({ data }) => !data.draft)
+  ])
+
+  const authoredItems: RSSFeedItem[] = await Promise.all(
+    [...posts, ...notes].map(async (entry) => {
+      const link = new URL(`/${entry.collection}/${encodeURI(entry.id)}/`, siteUrl).href
+      return {
+        title: entry.data.title,
+        description: entry.data.description,
+        pubDate: 'publishDate' in entry.data ? entry.data.publishDate : entry.data.date,
+        link,
+        categories: [entry.collection === 'blog' ? '文章' : '随记', ...entry.data.tags],
+        content: await renderContent(entry, siteUrl, link)
+      }
+    })
+  )
+
+  const curatedItems: RSSFeedItem[] = curated.map((entry) => ({
+    title: entry.data.sourceTitle || entry.data.title,
+    description: entry.data.why || entry.data.description,
+    pubDate: entry.data.date,
+    link: new URL(`/curated/#curated-${encodeURIComponent(entry.id)}`, siteUrl).href,
+    categories: ['收藏', ...entry.data.tags],
+    // These are recommendations, not copies of the external article.
+    content: `<p>${escapeHtml(entry.data.why || entry.data.description)}</p><p><a href="${escapeHtml(entry.data.source)}">阅读原文：${escapeHtml(entry.data.sourceTitle || entry.data.title)}</a></p>`
+  }))
 
   return rss({
-    // Basic configs
-    trailingSlash: false,
-    xmlns: { h: 'http://www.w3.org/TR/html4/' },
+    trailingSlash: true,
     stylesheet: '/scripts/pretty-feed-v3.xsl',
 
-    // Contents
     title: config.title,
     description: config.description,
-    site: import.meta.env.SITE,
-    items: await Promise.all(
-      allPostsByDate.map(async (post) => ({
-        pubDate: post.data.publishDate,
-        link: `/blog/${post.id}/`,
-        customData: `<h:img src="${typeof post.data.heroImage?.src === 'string' ? post.data.heroImage?.src : post.data.heroImage?.src.src}" />
-          <enclosure url="${typeof post.data.heroImage?.src === 'string' ? post.data.heroImage?.src : post.data.heroImage?.src.src}" />`,
-        content: await renderContent(post, siteUrl),
-        ...post.data
-      }))
+    site: siteUrl,
+    items: [...authoredItems, ...curatedItems].sort(
+      (a, b) => new Date(b.pubDate!).getTime() - new Date(a.pubDate!).getTime()
     )
   })
 }
-
-export { GET }

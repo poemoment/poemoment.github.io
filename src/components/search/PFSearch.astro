@@ -1,150 +1,207 @@
 ---
-import '@pagefind/default-ui/css/ui.css'
+import { getLangFromUrl } from '@/i18n/ui'
 
-const isLocalDev = import.meta.env.DEV
+const lang = getLangFromUrl(Astro.url)
+const labels = {
+  zh: {
+    query: '搜索文章、随记与收藏',
+    placeholder: '搜索主题、技术名词或代码…',
+    collection: '内容类型',
+    all: '全部内容',
+    blog: '文章',
+    archive: '随记',
+    curated: '收藏',
+    language: '内容语言',
+    allLanguages: '全部语言',
+    zh: '中文',
+    en: '英文',
+    hint: '输入至少 2 个字符，可按内容类型和语言筛选。',
+    retry: '重新搜索',
+    noScript: '搜索需要启用 JavaScript，也可以直接浏览随记。'
+  },
+  en: {
+    query: 'Search posts, notes, and curated resources',
+    placeholder: 'Search topics, technical terms, or code…',
+    collection: 'Content type',
+    all: 'All content',
+    blog: 'Posts',
+    archive: 'Notes',
+    curated: 'Curated',
+    language: 'Content language',
+    allLanguages: 'All languages',
+    zh: 'Chinese',
+    en: 'English',
+    hint: 'Enter at least 2 characters. Results keep their original language.',
+    retry: 'Try again',
+    noScript: 'Search requires JavaScript. You can also browse the notes.'
+  }
+}[lang]
 ---
 
-<template-site-search data-mode={isLocalDev ? 'local' : 'pagefind'}>
-  <aside class='form my-4'>
-    {
-      isLocalDev ? (
-        <div id='local-site-search' class='local-search'>
-          <input
-            id='local-search-input'
-            class='local-search-input'
-            type='search'
-            placeholder='Search posts, notes, and curated resources...'
-            autocomplete='off'
-            spellcheck='false'
-            aria-label='Search posts, notes, and curated resources'
-          />
-          <div id='local-search-status' class='local-search-status' aria-live='polite'></div>
-          <ol id='local-search-results' class='local-search-results'></ol>
-        </div>
-      ) : (
-        <div id='site-search' />
-      )
-    }
-  </aside>
+<template-site-search data-lang={lang}>
+  <div class='local-search'>
+    <label for='local-search-input' class='sr-only'>{labels.query}</label>
+    <input
+      id='local-search-input'
+      class='local-search-input'
+      type='search'
+      placeholder={labels.placeholder}
+      autocomplete='off'
+      spellcheck='false'
+      aria-describedby='local-search-status'
+      enterkeyhint='search'
+    />
+    <div class='local-search-filters'>
+      <label>
+        <span>{labels.collection}</span>
+        <select id='local-search-collection'>
+          <option value=''>{labels.all}</option>
+          <option value='blog'>{labels.blog}</option>
+          <option value='archive'>{labels.archive}</option>
+          <option value='curated'>{labels.curated}</option>
+        </select>
+      </label>
+      <label>
+        <span>{labels.language}</span>
+        <select id='local-search-language'>
+          <option value=''>{labels.allLanguages}</option>
+          <option value='zh'>{labels.zh}</option>
+          <option value='en'>{labels.en}</option>
+        </select>
+      </label>
+    </div>
+    <div class='local-search-feedback'>
+      <p id='local-search-status' class='local-search-status' role='status' aria-live='polite'>
+        {labels.hint}
+      </p>
+      <button id='local-search-retry' class='local-search-retry' type='button' hidden>
+        {labels.retry}
+      </button>
+    </div>
+    <ol id='local-search-results' class='local-search-results' aria-label={labels.query}></ol>
+    <noscript><a href='/archive/'>{labels.noScript}</a></noscript>
+  </div>
 </template-site-search>
 
 <script>
-  import { searchLocal } from '@/lib/search-client'
-
-  type LocalSearchResult = {
-    collection: 'blog' | 'archive' | 'curated'
-    title: string
-    description?: string
-    url: string
-    date: string
-    tags: string[]
-    excerpt: string
-  }
+  import { searchLocal, type SearchFilters, type SearchResult } from '@/lib/search-client'
 
   class TemplateSiteSearch extends HTMLElement {
+    private cleanup?: () => void
+
     connectedCallback() {
-      if (this.dataset.ready === 'true') return
-      this.dataset.ready = 'true'
-
-      if (this.dataset.mode === 'local') {
-        this.initLocalSearch()
-      } else {
-        this.initPagefind()
-      }
-    }
-
-    private initPagefind() {
-      const formatURL = (path: string) => path.replace(/(.)\/(#.*)?$/, '$1$2')
-      const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1))
-
-      onIdle(async () => {
-        // @ts-expect-error — Missing types for @pagefind/default-ui package.
-        const { PagefindUI } = await import('@pagefind/default-ui')
-        new PagefindUI({
-          element: '#site-search',
-          baseUrl: import.meta.env.BASE_URL,
-          bundlePath: import.meta.env.BASE_URL.replace(/\/$/, '') + '/pagefind/',
-          showImages: false,
-          showSubResults: true,
-          processResult: (result: { url: string; sub_results: Array<{ url: string }> }) => {
-            result.url = formatURL(result.url)
-            result.sub_results = result.sub_results.map((sub_result) => {
-              sub_result.url = formatURL(sub_result.url)
-              return sub_result
-            })
-          }
-        })
-      })
-    }
-
-    private initLocalSearch() {
-      const input = this.querySelector<HTMLInputElement>('#local-search-input')
-      const status = this.querySelector<HTMLElement>('#local-search-status')
-      const results = this.querySelector<HTMLOListElement>('#local-search-results')
-      if (!input || !status || !results) return
-
+      if (this.cleanup) return
+      const input = this.querySelector<HTMLInputElement>('#local-search-input')!
+      const collection = this.querySelector<HTMLSelectElement>('#local-search-collection')!
+      const language = this.querySelector<HTMLSelectElement>('#local-search-language')!
+      const status = this.querySelector<HTMLElement>('#local-search-status')!
+      const results = this.querySelector<HTMLOListElement>('#local-search-results')!
+      const retry = this.querySelector<HTMLButtonElement>('#local-search-retry')!
+      const isEn = this.dataset.lang === 'en'
+      const initialHint = status.textContent
+      const controller = new AbortController()
       let timer: ReturnType<typeof setTimeout> | undefined
-      let activeRequest: AbortController | undefined
-
-      const renderResults = (items: LocalSearchResult[]) => {
-        results.replaceChildren(...items.map((item) => createResultItem(item)))
-      }
+      let requestId = 0
 
       const runSearch = async () => {
+        const id = ++requestId
         const query = input.value.trim()
-        activeRequest?.abort()
-
+        retry.hidden = true
         if (query.length < 2) {
-          status.textContent = ''
           results.replaceChildren()
+          results.removeAttribute('aria-busy')
+          status.textContent = initialHint
           return
         }
-
-        activeRequest = new AbortController()
-        status.textContent = 'Searching...'
+        status.textContent = isEn ? 'Searching…' : '正在搜索…'
+        results.setAttribute('aria-busy', 'true')
+        results.replaceChildren()
 
         try {
-          // 纯静态站:拉取构建时生成的索引,在浏览器端打分(见 @/lib/search-client)
-          const matches = await searchLocal(query, 10)
-          if (activeRequest.signal.aborted) return
-          renderResults(matches)
-          status.textContent =
-            matches.length === 0
-              ? 'No results.'
-              : `${matches.length} result${matches.length === 1 ? '' : 's'}`
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') return
-          status.textContent = 'Search failed.'
-          results.replaceChildren()
+          const matches = await searchLocal(query, 20, {
+            collection: (collection.value || undefined) as SearchFilters['collection'],
+            language: (language.value || undefined) as SearchFilters['language']
+          })
+          if (id !== requestId || controller.signal.aborted) return
+          results.replaceChildren(...matches.map((item) => createResultItem(item, isEn, query)))
+          status.textContent = matches.length
+            ? isEn
+              ? `Showing ${matches.length} result${matches.length === 1 ? '' : 's'}.`
+              : `显示 ${matches.length} 条结果。`
+            : isEn
+              ? 'No matching content. Try another term or broaden the filters.'
+              : '未找到相关内容，可更换关键词或放宽筛选条件。'
+        } catch {
+          if (id !== requestId || controller.signal.aborted) return
+          status.textContent = isEn
+            ? 'Unable to load search. Check your connection and try again.'
+            : '暂时无法加载搜索，请检查网络后重试。'
+          retry.hidden = false
+        } finally {
+          if (id === requestId) results.removeAttribute('aria-busy')
         }
       }
 
-      input.addEventListener('input', () => {
+      const queueSearch = () => {
+        // Invalidate immediately, including the time before the debounce fires.
+        requestId += 1
         if (timer) clearTimeout(timer)
         timer = setTimeout(runSearch, 180)
-      })
+      }
+      input.addEventListener('input', queueSearch, { signal: controller.signal })
+      collection.addEventListener('change', queueSearch, { signal: controller.signal })
+      language.addEventListener('change', queueSearch, { signal: controller.signal })
+      retry.addEventListener('click', runSearch, { signal: controller.signal })
+      this.cleanup = () => {
+        requestId += 1
+        if (timer) clearTimeout(timer)
+        controller.abort()
+      }
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.()
+      this.cleanup = undefined
     }
   }
 
-  function createResultItem(item: LocalSearchResult) {
+  function highlightMatches(element: HTMLElement, text: string, query: string) {
+    const terms = query.trim().split(/\s+/).filter(Boolean)
+    const escaped = terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    const pattern = new RegExp(`(${escaped.join('|')})`, 'gi')
+    for (const part of text.split(pattern)) {
+      if (terms.some((term) => term.toLowerCase() === part.toLowerCase())) {
+        const mark = document.createElement('mark')
+        mark.textContent = part
+        element.append(mark)
+      } else {
+        element.append(document.createTextNode(part))
+      }
+    }
+  }
+
+  function createResultItem(item: SearchResult, isEn: boolean, query: string) {
     const li = document.createElement('li')
     li.className = 'local-search-item'
-
     const link = document.createElement('a')
     link.className = 'local-search-title'
     link.href = item.url
-    link.textContent = item.title
+    link.lang = item.language === 'en' ? 'en' : 'zh-CN'
+    highlightMatches(link, item.title, query)
 
     const meta = document.createElement('div')
     meta.className = 'local-search-meta'
-    const collectionLabel =
-      item.collection === 'blog' ? 'Blog' : item.collection === 'curated' ? 'Curated' : 'Notes'
-    meta.textContent = [collectionLabel, item.date].filter(Boolean).join(' · ')
+    const collectionLabels = isEn
+      ? { blog: 'Post', archive: 'Note', curated: 'Curated' }
+      : { blog: '文章', archive: '随记', curated: '收藏' }
+    const languageLabel =
+      item.language === 'en' ? (isEn ? 'English' : '英文') : isEn ? 'Chinese' : '中文'
+    meta.textContent = [collectionLabels[item.collection], languageLabel, item.date].join(' · ')
 
     const excerpt = document.createElement('p')
     excerpt.className = 'local-search-excerpt'
-    excerpt.textContent = item.excerpt || item.description || ''
-
+    excerpt.lang = link.lang
+    highlightMatches(excerpt, item.excerpt || item.description || '', query)
     li.append(link, meta, excerpt)
     return li
   }
@@ -155,85 +212,108 @@ const isLocalDev = import.meta.env.DEV
 </script>
 
 <style>
-  #site-search {
-    --pagefind-ui-scale: 0.8;
-    --pagefind-ui-primary: hsl(var(--primary) / var(--un-bg-opacity, 1));
-    --pagefind-ui-text: hsl(var(--foreground) / var(--un-text-opacity, 1));
-    --pagefind-ui-background: hsl(var(--muted) / var(--un-bg-opacity, 1));
-    --pagefind-ui-border: hsl(var(--border) / var(--un-border-opacity, 1));
-    --pagefind-ui-tag: hsl(var(--muted-foreground) / var(--un-text-opacity, 1));
-    --pagefind-ui-border-width: 2px;
-    --pagefind-ui-border-radius: calc(var(--radius) + 2px);
-    --pagefind-ui-image-border-radius: calc(var(--radius) + 2px);
-    --pagefind-ui-image-box-ratio: 3 / 2;
-    --pagefind-ui-font: sans-serif;
-  }
-
   .local-search {
     display: grid;
-    gap: 0.9rem;
+    gap: 1rem;
+    margin-top: 1.5rem;
   }
-
   .local-search-input {
     width: 100%;
-    min-height: 3.15rem;
-    border: 2px solid hsl(var(--border));
-    border-radius: calc(var(--radius) + 2px);
-    background: transparent;
+    min-height: 3.4rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.85rem;
+    background: hsl(var(--background));
     color: hsl(var(--foreground));
-    padding: 0.7rem 1rem;
+    padding: 0.85rem 1rem;
     font: inherit;
     font-size: 1rem;
-    outline: none;
   }
-
-  .local-search-input:focus {
-    border-color: hsl(var(--foreground));
+  .local-search-input:focus-visible,
+  select:focus-visible,
+  .local-search-retry:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
   }
-
-  .local-search-status {
-    min-height: 1.2rem;
+  .local-search-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+  }
+  .local-search-filters label {
+    display: grid;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 8.5rem;
+    max-width: 13rem;
+  }
+  .local-search-filters span {
     color: hsl(var(--muted-foreground));
-    font-size: 0.9rem;
+    font-size: 0.8125rem;
   }
-
+  .local-search-filters select {
+    min-height: 2.75rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font: inherit;
+    font-size: 0.875rem;
+  }
+  .local-search-feedback {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .local-search-status {
+    margin: 0;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .local-search-retry {
+    padding: 0.5rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .local-search-results {
     display: grid;
-    gap: 0.75rem;
+    gap: 0;
     list-style: none;
     margin: 0;
     padding: 0;
   }
-
-  .local-search-item {
-    border: 1px solid hsl(var(--border));
-    border-radius: calc(var(--radius) + 2px);
-    padding: 0.85rem 1rem;
-    background: hsl(var(--muted) / 0.35);
+  .local-search-results :global(.local-search-item) {
+    border-top: 1px solid hsl(var(--border));
+    padding: 1.25rem 0;
   }
-
-  .local-search-title {
+  .local-search-results :global(.local-search-title) {
     color: hsl(var(--foreground));
-    font-size: 1rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.5;
     text-decoration: none;
   }
-
-  .local-search-title:hover {
+  .local-search-results :global(.local-search-title:hover) {
     color: hsl(var(--primary));
   }
-
-  .local-search-meta {
-    margin-top: 0.25rem;
+  .local-search-results :global(.local-search-meta) {
+    margin-top: 0.4rem;
     color: hsl(var(--muted-foreground));
-    font-size: 0.82rem;
+    font-size: 0.8125rem;
   }
-
-  .local-search-excerpt {
-    margin: 0.5rem 0 0;
+  .local-search-results :global(.local-search-excerpt) {
+    max-width: 72ch;
+    margin: 0.6rem 0 0;
     color: hsl(var(--muted-foreground));
-    font-size: 0.92rem;
-    line-height: 1.55;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  .local-search-results :global(mark) {
+    color: hsl(var(--foreground));
+    background: hsl(var(--primary) / 0.16);
+    border-radius: 0.2rem;
   }
 </style>

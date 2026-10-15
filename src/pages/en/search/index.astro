@@ -1,34 +1,28 @@
 ---
 import { Button } from 'astro-pure/user'
-import PFSearch from '@/components/search/PFSearch.astro'
-import CgBackdrop from '@/components/home/CgBackdrop.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
-import { integ } from '@/site-config'
+import CgBackdrop from '@/components/home/CgBackdrop.astro'
+import PFSearch from '@/components/search/PFSearch.astro'
 
 const meta = {
-  description: 'Search relative posts of the whole blog',
+  description: 'Search published posts, notes, and curated recommendations.',
   title: 'Search'
 }
 ---
 
 <PageLayout {meta}>
-  <Button title='Back' href='/en/blog/' style='back' />
+  <Button title='Back to home' href='/en/' style='back' />
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
       <h1 class='mb-6 text-3xl font-medium'>Search</h1>
     </div>
 
     <div id='content' class='animate'>
-      {
-        integ.pagefind ? (
-          <>
-            <p>Enter a search term or phrase to search the blog.</p>
-            <PFSearch />
-          </>
-        ) : (
-          <p>Pagefind is disabled.</p>
-        )
-      }
+      <p class='text-sm leading-7 text-muted-foreground'>
+        Search published posts, notes, and curated recommendations. Most content is currently in
+        Chinese; results link to the original version.
+      </p>
+      <PFSearch />
     </div>
     <CgBackdrop />
   </main>

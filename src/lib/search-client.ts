@@ -10,6 +10,7 @@ export type SearchCollection = 'blog' | 'archive' | 'curated'
 
 export interface SearchDoc {
   collection: SearchCollection
+  language: 'zh' | 'en'
   title: string
   description?: string
   url: string
@@ -42,10 +43,21 @@ export function loadSearchIndex(): Promise<SearchDoc[]> {
   return indexPromise
 }
 
-export async function searchLocal(query: string, limit = 10): Promise<SearchResult[]> {
+export interface SearchFilters {
+  collection?: SearchCollection
+  language?: 'zh' | 'en'
+}
+
+export async function searchLocal(
+  query: string,
+  limit = 10,
+  filters: SearchFilters = {}
+): Promise<SearchResult[]> {
   const normalized = query.trim()
   const docs = await loadSearchIndex()
   return docs
+    .filter((doc) => !filters.collection || doc.collection === filters.collection)
+    .filter((doc) => !filters.language || doc.language === filters.language)
     .map((doc) => scoreDoc(doc, normalized))
     .filter((result): result is SearchResult => Boolean(result))
     .sort((a, b) => b.score - a.score || b.date.localeCompare(a.date))
@@ -73,11 +85,13 @@ function scoreDoc(doc: SearchDoc, query: string): SearchResult | null {
     if (title.includes(term)) score += 12
     if (description.includes(term)) score += 7
     if (tags.includes(term)) score += 5
-    score += countOccurrences(body, term)
+    // Long notes should not outrank a title match just by repeating a word.
+    score += Math.min(4, countOccurrences(body, term))
   }
 
   return {
     collection: doc.collection,
+    language: doc.language,
     title: doc.title,
     description: doc.description,
     url: doc.url,
@@ -105,7 +119,10 @@ function countOccurrences(text: string, term: string) {
 }
 
 function makeExcerpt(doc: SearchDoc, terms: string[]) {
-  const source = doc.body || doc.description || doc.title
+  const sources = [doc.description, doc.body, doc.title].filter(Boolean) as string[]
+  const source =
+    sources.find((candidate) => terms.some((term) => candidate.toLowerCase().includes(term))) ||
+    sources[0]
   const lower = source.toLowerCase()
   const hit = terms
     .map((term) => lower.indexOf(term))

@@ -81,7 +81,7 @@ const columnLatest: Record<
     unit: 'entries',
     latest: curatedEntries[0] && {
       title: curatedEntries[0].data.title,
-      href: `/curated/${curatedEntries[0].id}/`
+      href: `/en/curated/#curated-${encodeURIComponent(curatedEntries[0].id)}`
     }
   }
 }
@@ -104,7 +104,7 @@ const stageEn: Record<string, string> = {
 }
 
 const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(date)
+  new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Shanghai' }).format(date)
 ---
 
 <PageLayout meta={{ title: 'Home' }}>
@@ -165,34 +165,29 @@ const formatDate = (date: Date) =>
               ))}
             </ol>
           ) : (
-            <div class='empty-state'>
-              <p>
-                {archiveEntries.length
-                  ? 'Longer posts are in progress. Start with the latest notes.'
-                  : 'No public posts yet. The first one will appear here.'}
-              </p>
-              <p class='empty-alt'>
-                Meanwhile you can browse <a href='/en/archive/'>notes</a> and{' '}
-                <a href='/en/curated/'>curated</a>.
-              </p>
+            <div class:list={['home-notes', { 'empty-state': !archiveEntries.length }]}>
+              {!archiveEntries.length && (
+                <p>The first note is in progress. Explore the <a href='/en/curated/'>reading collection</a>.</p>
+              )}
               <ol class='post-list latest-notes' data-home-notes>
                 {archiveEntries.slice(0, 3).map((entry) => (
                   <li data-motion-reveal>
                     <a class='post-row' href={archiveHref(entry.id)}>
                       <div class='post-main'>
                         <span class='note-kind'>
-                          Note<span aria-hidden='true'>↗</span>
+                          {entry.data.tags.includes('工程复盘') ? 'Engineering note' : 'Note'}
+                          <span aria-hidden='true'>↗</span>
                         </span>
                         <h3>{entry.data.title}</h3>
                         {entry.data.description && <p>{entry.data.description}</p>}
                         <p class='post-meta-line'>
-                          <time datetime={entry.data.date.toISOString()} data-rel>
+                          <time datetime={entry.data.date.toISOString()}>
                             {formatDate(entry.data.date)}
                           </time>
-                          {entry.data.tags[0] && (
+                          {entry.data.status === 'ready' && (
                             <>
                               <span class='meta-sep'>·</span>
-                              <span class='meta-tag'>{entry.data.tags[0]}</span>
+                              <span class='meta-tag'>Written up</span>
                             </>
                           )}
                         </p>
@@ -300,7 +295,19 @@ const formatDate = (date: Date) =>
       <ul class='column-list'>
         {
           siteColumnsEn.map((column) => {
-            const meta = column.collection ? columnLatest[column.collection] : undefined
+            const matchingNotes = column.tag
+              ? zhArchive.filter((entry) => entry.data.tags.includes(column.tag!))
+              : undefined
+            const meta = matchingNotes
+              ? {
+                  count: matchingNotes.length,
+                  unit: 'notes',
+                  latest: matchingNotes[0] && {
+                    title: matchingNotes[0].data.title,
+                    href: `/archive/${matchingNotes[0].id}/`
+                  }
+                }
+              : column.collection ? columnLatest[column.collection] : undefined
             return (
               <li class='column-row motion-row' data-motion-reveal>
                 <div class='column-name'>

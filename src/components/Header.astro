@@ -4,6 +4,7 @@ import { getLangFromUrl, localizedPath, useTranslations, type Lang } from '@/i18
 import { Icon } from 'astro-pure/user'
 import LanguageSwitcher from '@/components/LanguageSwitcher.astro'
 import config from '@/site-config'
+import { getCollection } from 'astro:content'
 
 interface Props {
   lang?: Lang
@@ -22,7 +23,12 @@ const menuKeyMap: Record<string, Parameters<typeof t>[0]> = {
   '/contact': 'nav.contact'
 }
 
-const menu = (config.header?.menu ?? []).map((item) => {
+const publishedPosts = await getCollection('blog', ({ data }) => !data.draft)
+const publishedEnPosts = lang === 'en' ? await getCollection('blogEn', ({ data }) => !data.draft) : []
+const hasPosts = publishedPosts.length > 0 || publishedEnPosts.length > 0
+const menu = (config.header?.menu ?? []).filter((item) =>
+  item.link.replace(/\/+$/, '') !== '/blog' || hasPosts
+).map((item) => {
   const key = menuKeyMap[item.link.replace(/\/+$/, '')]
   return {
     title: key ? t(key) : item.title,
@@ -57,6 +63,7 @@ const searchHref = localizedPath('/search', lang)
               href={item.link}
               class='w-full flex-none grow py-2 text-right font-medium transition-none hover:text-primary md:w-fit md:px-3'
               data-nav-item
+              aria-current={Astro.url.pathname.replace(/\/+$/, '') === item.link.replace(/\/+$/, '') ? 'page' : undefined}
             >
               {item.title}
             </a>

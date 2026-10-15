@@ -3,6 +3,10 @@ body[data-design='sky-notebook'] {
     radial-gradient(ellipse at 5% 0%, hsl(332 75% 88% / 0.2), transparent 42%),
     radial-gradient(ellipse at 100% 12%, hsl(214 80% 88% / 0.25), transparent 40%);
 }
+/* Full-bleed decorative artwork must not create a horizontal page scrollbar. */
+html:has(.cg-backdrop) {
+  overflow-x: clip;
+}
 html.dark body[data-design='sky-notebook'] {
   background-image:
     radial-gradient(ellipse at 0% 0%, hsl(286 50% 35% / 0.12), transparent 50%),

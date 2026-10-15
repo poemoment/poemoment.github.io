@@ -62,7 +62,7 @@ const columnLatest: Record<
     unit: '条',
     latest: curatedEntries[0] && {
       title: curatedEntries[0].data.title,
-      href: `/curated/${curatedEntries[0].id}/`
+      href: `/curated/#curated-${encodeURIComponent(curatedEntries[0].id)}`
     }
   }
 }
@@ -77,7 +77,7 @@ const recentActivity = [
   .sort((a, b) => b.date.valueOf() - a.date.valueOf())[0]
 
 const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai' })
     .format(date)
     .replace(/\//g, '-')
 ---
@@ -145,33 +145,29 @@ const formatDate = (date: Date) =>
               ))}
             </ol>
           ) : (
-            <div class='empty-state'>
-              <p>
-                {archiveEntries.length
-                  ? '完整文章还在准备中，先从最近的随记开始。'
-                  : '还没有公开文章。第一篇写完就会出现在这里。'}
-              </p>
-              <p class='empty-alt'>
-                现在可以先看<a href='/archive/'>随记</a>与<a href='/curated/'>收藏</a>。
-              </p>
+            <div class:list={['home-notes', { 'empty-state': !archiveEntries.length }]}>
+              {!archiveEntries.length && (
+                <p>第一篇记录还在整理，可以先看看<a href='/curated/'>资料收藏</a>。</p>
+              )}
               <ol class='post-list latest-notes' data-home-notes>
                 {archiveEntries.slice(0, 3).map((entry) => (
                   <li data-motion-reveal>
                     <a class='post-row' href={`/archive/${entry.id}/`}>
                       <div class='post-main'>
                         <span class='note-kind'>
-                          随记<span aria-hidden='true'>↗</span>
+                          {entry.data.tags.includes('工程复盘') ? '工程复盘' : '随记'}
+                          <span aria-hidden='true'>↗</span>
                         </span>
                         <h3>{entry.data.title}</h3>
                         {entry.data.description && <p>{entry.data.description}</p>}
                         <p class='post-meta-line'>
-                          <time datetime={entry.data.date.toISOString()} data-rel>
+                          <time datetime={entry.data.date.toISOString()}>
                             {formatDate(entry.data.date)}
                           </time>
-                          {entry.data.tags[0] && (
+                          {entry.data.status === 'ready' && (
                             <>
                               <span class='meta-sep'>·</span>
-                              <span class='meta-tag'>{entry.data.tags[0]}</span>
+                              <span class='meta-tag'>整理完成</span>
                             </>
                           )}
                         </p>
@@ -267,7 +263,19 @@ const formatDate = (date: Date) =>
       <ul class='column-list'>
         {
           siteColumns.map((column) => {
-            const meta = column.collection ? columnLatest[column.collection] : undefined
+            const matchingNotes = column.tag
+              ? archiveEntries.filter((entry) => entry.data.tags.includes(column.tag!))
+              : undefined
+            const meta = matchingNotes
+              ? {
+                  count: matchingNotes.length,
+                  unit: '篇',
+                  latest: matchingNotes[0] && {
+                    title: matchingNotes[0].data.title,
+                    href: `/archive/${matchingNotes[0].id}/`
+                  }
+                }
+              : column.collection ? columnLatest[column.collection] : undefined
             return (
               <li class='column-row motion-row' data-motion-reveal>
                 <div class='column-name'>
